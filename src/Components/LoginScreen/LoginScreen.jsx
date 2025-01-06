@@ -1,40 +1,75 @@
 import React, { useState } from 'react';
+import { auth } from '../../backend/firebaseConfig';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 function LoginScreen({ onLogin }) {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleAuth = async (e) => {
     e.preventDefault();
-    if (username === 'admin' && password === 'password') {
-      onLogin();
-    } else {
-      alert('Invalid credentials');
+    try {
+      let userCredential;
+      if (isSignUp) {
+        userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        await saveUser(userCredential.user);
+        alert('Signup successful!');
+      } else {
+        userCredential = await signInWithEmailAndPassword(auth, email, password);
+        alert('Login successful!');
+        onLogin();
+      }
+    } catch (error) {
+      console.error(error);
+      alert(error.message);
     }
   };
 
+  const handleGoogleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      await saveUser(result.user);
+      alert('Login with Google successful!');
+      onLogin();
+    } catch (error) {
+      console.error(error);
+      alert(error.message);
+    }
+  };
+
+  const saveUser = async (user) => {
+    const { uid, email } = user;
+    await fetch('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uid, email }),
+    });
+  };
+
   return (
-    <div style={{ textAlign: 'center', marginTop: '20%' }}>
-      <h1>Login</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-        </div>
-        <div>
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
-        <button type="submit">Login</button>
+    <div>
+      <h1>{isSignUp ? 'Sign Up' : 'Login'}</h1>
+      <form onSubmit={handleAuth}>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button type="submit">{isSignUp ? 'Sign Up' : 'Login'}</button>
       </form>
+      <button onClick={handleGoogleLogin}>Login with Google</button>
+      <button onClick={() => setIsSignUp(!isSignUp)}>
+        {isSignUp ? 'Switch to Login' : 'Switch to Sign Up'}
+      </button>
     </div>
   );
 }
