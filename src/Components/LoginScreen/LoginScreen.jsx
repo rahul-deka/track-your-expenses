@@ -6,6 +6,7 @@ function LoginScreen({ onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
+  const API_URL = 'https://track-your-expenses.onrender.com/api/users';
 
   const handleAuth = async (e) => {
     e.preventDefault();
@@ -41,7 +42,7 @@ function LoginScreen({ onLogin }) {
 
   const saveUser = async (user) => {
     const { uid, email } = user;
-    await fetch('/api/users', {
+    await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ uid, email }),
