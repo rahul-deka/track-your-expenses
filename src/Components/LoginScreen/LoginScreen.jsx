@@ -6,7 +6,8 @@ function LoginScreen({ onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
-  const API_URL = 'https://track-your-expenses.onrender.com/api/users';
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api/users';
+
 
   const handleAuth = async (e) => {
     e.preventDefault();
