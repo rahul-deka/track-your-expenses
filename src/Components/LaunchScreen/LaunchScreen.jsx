@@ -13,7 +13,7 @@ function LaunchScreen() {
 
   return (
     <div style={{ textAlign: 'center', marginTop: '20%' }}>
-      <h1>Welcome to My App</h1>
+      <h1>Welcome to Expense Tracker</h1>
       <p>Loading...</p>
     </div>
   );
