@@ -6,8 +6,7 @@ function LoginScreen({ onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api/users';
-
+  const API_URL = import.meta.env.VITE_REACT_APP_API_URL || 'http://localhost:5000/api/users';
 
   const handleAuth = async (e) => {
     e.preventDefault();
@@ -68,7 +67,7 @@ function LoginScreen({ onLogin }) {
         />
         <button type="submit">{isSignUp ? 'Sign Up' : 'Login'}</button>
       </form>
-      <button onClick={handleGoogleLogin}>Login with Google</button>
+      {/* <button onClick={handleGoogleLogin}>Login with Google</button> */}
       <button onClick={() => setIsSignUp(!isSignUp)}>
         {isSignUp ? 'Switch to Login' : 'Switch to Sign Up'}
       </button>
