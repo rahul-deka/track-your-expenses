@@ -42,11 +42,20 @@ function LoginScreen({ onLogin }) {
 
   const saveUser = async (user) => {
     const { uid, email } = user;
-    await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ uid, email }),
-    });
+    try {
+      console.log('Saving user to:', API_URL);
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid, email }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to save user');
+      }
+      console.log('User saved successfully');
+    } catch (error) {
+      console.error('Error saving user:', error);
+    }
   };
 
   return (
