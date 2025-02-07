@@ -14,7 +14,7 @@ function LoginScreen({ onLogin }) {
       let userCredential;
       if (isSignUp) {
         userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await saveUser(userCredential.user);
+        await saveUser(userCredential.user, password);
         alert('Signup successful!');
       } else {
         userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -31,7 +31,7 @@ function LoginScreen({ onLogin }) {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
-      await saveUser(result.user);
+      await saveUser(result.user, "");
       alert('Login with Google successful!');
       onLogin();
     } catch (error) {
@@ -40,14 +40,14 @@ function LoginScreen({ onLogin }) {
     }
   };
 
-  const saveUser = async (user) => {
+  const saveUser = async (user, password) => {
     const { uid, email } = user;
     try {
       console.log('Saving user to:', API_URL);
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid, email }),
+        body: JSON.stringify({ uid, email, password }),
       });
       if (!response.ok) {
         throw new Error('Failed to save user');
@@ -76,7 +76,6 @@ function LoginScreen({ onLogin }) {
         />
         <button type="submit">{isSignUp ? 'Sign Up' : 'Login'}</button>
       </form>
-      {/* <button onClick={handleGoogleLogin}>Login with Google</button> */}
       <button onClick={() => setIsSignUp(!isSignUp)}>
         {isSignUp ? 'Switch to Login' : 'Switch to Sign Up'}
       </button>

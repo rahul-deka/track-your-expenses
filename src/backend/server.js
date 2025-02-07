@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
+import bcrypt from 'bcryptjs';
 
 dotenv.config();
 
@@ -21,16 +22,21 @@ mongoose.connect(mongoURI, {
 const UserSchema = new mongoose.Schema({
   uid: { type: String, required: true },
   email: { type: String, required: true },
+  password: { type: String, required: true },
 });
 
 const User = mongoose.model('User', UserSchema, 'expense-user');
 
 app.post('/api/users', async (req, res) => {
-  const { uid, email } = req.body;
+  const { uid, email, password } = req.body;
+
   try {
     const existingUser = await User.findOne({ uid });
     if (!existingUser) {
-      const newUser = new User({ uid, email });
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      const newUser = new User({ uid, email, password: hashedPassword });
       await newUser.save();
       res.status(201).send('User saved successfully');
     } else {
