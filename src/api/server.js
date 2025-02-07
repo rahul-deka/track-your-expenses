@@ -42,4 +42,8 @@ app.post('/api/users', async (req, res) => {
   }
 });
 
+app.get('/api/users', (req, res) => {
+  res.send('User API is working!');
+});
+
 export default app;
