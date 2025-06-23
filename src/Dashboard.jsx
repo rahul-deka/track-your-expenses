@@ -17,11 +17,11 @@ export default function Dashboard() {
 
   const amountRef = useRef();
   const noteRef = useRef();
+  const dateRef = useRef(); // NEW
 
   const [type, setType] = useState('expense');
   const [category, setCategory] = useState('Food');
   const [expenses, setExpenses] = useState([]);
-
   const [editId, setEditId] = useState(null);
 
   const categories = [
@@ -40,11 +40,13 @@ export default function Dashboard() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const pickedDate = dateRef.current.value ? new Date(dateRef.current.value) : new Date();
+
     const data = {
       amount: parseFloat(amountRef.current.value),
       category,
       note: noteRef.current.value || '',
-      date: new Date(),
+      date: pickedDate,
       type
     };
 
@@ -58,8 +60,10 @@ export default function Dashboard() {
       await addDoc(expenseRef, data);
     }
 
+    // Reset form
     amountRef.current.value = '';
     noteRef.current.value = '';
+    dateRef.current.value = '';
     setType('expense');
     setCategory('Food');
   };
@@ -84,6 +88,11 @@ export default function Dashboard() {
     noteRef.current.value = exp.note;
     setType(exp.type);
     setCategory(exp.category);
+
+    const date = new Date(exp.date.seconds * 1000);
+    const yyyyMMdd = date.toISOString().split('T')[0];
+    dateRef.current.value = yyyyMMdd;
+
     setEditId(exp.id);
   };
 
@@ -142,6 +151,14 @@ export default function Dashboard() {
             <option key={cat} value={cat}>{cat}</option>
           ))}
         </select>
+
+        <br />
+
+        <label>Date:</label><br />
+        <input
+          ref={dateRef}
+          type="date"
+        />
 
         <br />
 
