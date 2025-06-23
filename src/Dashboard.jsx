@@ -7,6 +7,9 @@ import {
   query,
   orderBy,
   onSnapshot,
+  doc,
+  deleteDoc,
+  updateDoc
 } from 'firebase/firestore';
 
 export default function Dashboard() {
@@ -14,10 +17,12 @@ export default function Dashboard() {
 
   const amountRef = useRef();
   const noteRef = useRef();
+
   const [type, setType] = useState('expense');
   const [category, setCategory] = useState('Food');
-
   const [expenses, setExpenses] = useState([]);
+
+  const [editId, setEditId] = useState(null);
 
   const categories = [
     'Food',
@@ -32,17 +37,26 @@ export default function Dashboard() {
     'Other'
   ];
 
-  const handleAdd = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const expenseRef = collection(db, 'users', currentUser.uid, 'expenses');
-    await addDoc(expenseRef, {
+    const data = {
       amount: parseFloat(amountRef.current.value),
       category,
       note: noteRef.current.value || '',
       date: new Date(),
-      type,
-    });
+      type
+    };
+
+    const expenseRef = collection(db, 'users', currentUser.uid, 'expenses');
+
+    if (editId) {
+      const docRef = doc(db, 'users', currentUser.uid, 'expenses', editId);
+      await updateDoc(docRef, data);
+      setEditId(null);
+    } else {
+      await addDoc(expenseRef, data);
+    }
 
     amountRef.current.value = '';
     noteRef.current.value = '';
@@ -58,9 +72,20 @@ export default function Dashboard() {
     const unsub = onSnapshot(q, (snapshot) => {
       setExpenses(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
     });
-
     return unsub;
   }, [currentUser]);
+
+  const handleDelete = async (id) => {
+    await deleteDoc(doc(db, 'users', currentUser.uid, 'expenses', id));
+  };
+
+  const handleEdit = (exp) => {
+    amountRef.current.value = exp.amount;
+    noteRef.current.value = exp.note;
+    setType(exp.type);
+    setCategory(exp.category);
+    setEditId(exp.id);
+  };
 
   const totalIncome = expenses
     .filter((exp) => exp.type === 'income')
@@ -77,8 +102,8 @@ export default function Dashboard() {
       <h2>Welcome, {currentUser.email}</h2>
       <button onClick={logout}>Logout</button>
 
-      <h3>Add Transaction</h3>
-      <form onSubmit={handleAdd}>
+      <h3>{editId ? 'Edit Transaction' : 'Add Transaction'}</h3>
+      <form onSubmit={handleSubmit}>
 
         <label>
           <input
@@ -126,7 +151,8 @@ export default function Dashboard() {
         ></textarea>
 
         <br />
-        <button type="submit">Add</button>
+        <button type="submit">{editId ? 'Update' : 'Add'}</button>
+        {editId && <button type="button" onClick={() => setEditId(null)}>Cancel Edit</button>}
       </form>
 
       <h3>Summary</h3>
@@ -138,9 +164,11 @@ export default function Dashboard() {
       <ul>
         {expenses.map((exp) => (
           <li key={exp.id}>
-            [{exp.type}] {exp.category}: ₹{exp.amount}
-            — {exp.note ? exp.note + ' — ' : ''}
+            [{exp.type}] {exp.category}: ₹{exp.amount} — {exp.note ? exp.note + ' — ' : ''}
             {new Date(exp.date.seconds * 1000).toLocaleDateString()}
+            {' '}
+            <button onClick={() => handleEdit(exp)}>Edit</button>
+            <button onClick={() => handleDelete(exp.id)}>Delete</button>
           </li>
         ))}
       </ul>
