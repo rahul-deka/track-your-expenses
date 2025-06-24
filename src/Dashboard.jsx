@@ -19,7 +19,11 @@ import {
   Cell,
   Tooltip,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis
 } from 'recharts';
 
 export default function Dashboard() {
@@ -50,7 +54,10 @@ export default function Dashboard() {
     'Other'
   ];
 
-  const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#8dd1e1', '#a4de6c', '#d0ed57', '#ffc0cb', '#ffbb28', '#00C49F'];
+  const COLORS = [
+    '#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#8dd1e1',
+    '#a4de6c', '#d0ed57', '#ffc0cb', '#ffbb28', '#00C49F'
+  ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -133,6 +140,27 @@ export default function Dashboard() {
     return { name: cat, value: total };
   }).filter(item => item.value > 0);
 
+  function formatYearMonth(date) {
+    const d = new Date(date.seconds ? date.seconds * 1000 : date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+  }
+
+  const monthGroups = {};
+  expenses.forEach(exp => {
+    const key = formatYearMonth(exp.date);
+    if (!monthGroups[key]) {
+      monthGroups[key] = { month: key, income: 0, expense: 0 };
+    }
+    if (exp.type === 'income') {
+      monthGroups[key].income += exp.amount;
+    } else if (exp.type === 'expense') {
+      monthGroups[key].expense += exp.amount;
+    }
+  });
+  const monthlyData = Object.values(monthGroups).sort((a, b) => a.month.localeCompare(b.month));
+
   return (
     <div>
       <h2>Welcome, {currentUser.email}</h2>
@@ -203,33 +231,53 @@ export default function Dashboard() {
       <p>Total Expense: ₹{totalExpense}</p>
       <p>Balance: ₹{balance}</p>
 
-      <h3>Expense Breakdown (Pie Chart)</h3>
-
-      {categoryTotals.length === 0 ? (
-        <p>No expense data for the selected range.</p>
-      ) : (
-        <div style={{ width: '100%', height: 400 }}>
-          <ResponsiveContainer>
-            <PieChart>
-              <Pie
-                dataKey="value"
-                data={categoryTotals}
-                cx="50%"
-                cy="50%"
-                outerRadius={120}
-                fill="#8884d8"
-                label
-              >
-                {categoryTotals.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
+      <h3>Charts</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
+        <div style={{ flex: 1, height: 400 }}>
+          <h4>Expense Breakdown (Pie Chart)</h4>
+          {categoryTotals.length === 0 ? (
+            <p>No expense data for the selected range.</p>
+          ) : (
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie
+                  dataKey="value"
+                  data={categoryTotals}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={120}
+                  fill="#8884d8"
+                  label
+                >
+                  {categoryTotals.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
         </div>
-      )}
+
+        <div style={{ flex: 1, height: 400 }}>
+          <h4>Income vs Expense (Monthly Bar Chart)</h4>
+          {monthlyData.length === 0 ? (
+            <p>No data for the selected range.</p>
+          ) : (
+            <ResponsiveContainer>
+              <BarChart data={monthlyData}>
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="income" fill="#82ca9d" name="Income" />
+                <Bar dataKey="expense" fill="#8884d8" name="Expense" />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </div>
 
       <h3>Filtered Transactions</h3>
       <ul>
