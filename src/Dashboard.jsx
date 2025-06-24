@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { AttachMoney, MoneyOff, AccountBalanceWallet } from '@mui/icons-material';
 import { useAuth } from './AuthContext';
 import { db } from './backend/firebaseConfig';
 import {
@@ -46,8 +47,15 @@ import {
   Typography,
   Paper,
   Stack,
-  Divider
+  Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Fab
 } from '@mui/material';
+
+import AddIcon from '@mui/icons-material/Add';
 
 export default function Dashboard() {
   const { currentUser, logout } = useAuth();
@@ -63,6 +71,8 @@ export default function Dashboard() {
 
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+
+  const [openForm, setOpenForm] = useState(false);
 
   const categories = [
     'Food',
@@ -107,6 +117,7 @@ export default function Dashboard() {
     dateRef.current.value = '';
     setType('expense');
     setCategory('Food');
+    setOpenForm(false);
   };
 
   useEffect(() => {
@@ -144,6 +155,7 @@ export default function Dashboard() {
     const yyyyMMdd = date.toISOString().split('T')[0];
     dateRef.current.value = yyyyMMdd;
     setEditId(exp.id);
+    setOpenForm(true);
   };
 
   const totalIncome = expenses
@@ -170,7 +182,6 @@ export default function Dashboard() {
     return `${year}-${month}`;
   }
 
-  // Monthly Income & Expense for Bar Chart
   const monthGroups = {};
   expenses.forEach(exp => {
     const key = formatYearMonth(exp.date);
@@ -185,7 +196,6 @@ export default function Dashboard() {
   });
   const monthlyData = Object.values(monthGroups).sort((a, b) => a.month.localeCompare(b.month));
 
-  // Monthly Expense only for Line Chart (trend)
   const expenseTrendGroups = {};
   expenses
     .filter(exp => exp.type === 'expense')
@@ -205,94 +215,65 @@ export default function Dashboard() {
         <Button variant="outlined" color="error" onClick={logout}>Logout</Button>
       </Box>
 
-      <Paper sx={{ p: 3, mb: 4 }}>
-        <Typography variant="h5" gutterBottom>{editId ? 'Edit Transaction' : 'Add Transaction'}</Typography>
-        <Box
-          component="form"
-          onSubmit={handleSubmit}
-          sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 400 }}
-        >
-          <FormControl>
-            <FormLabel>Type</FormLabel>
-            <RadioGroup
-              row
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-            >
-              <FormControlLabel value="income" control={<Radio />} label="Income" />
-              <FormControlLabel value="expense" control={<Radio />} label="Expense" />
-            </RadioGroup>
-          </FormControl>
-
-          <TextField
-            inputRef={amountRef}
-            label="Amount"
-            type="number"
-            required
-          />
-
-          <FormControl fullWidth>
-            <InputLabel>Category</InputLabel>
-            <Select
-              value={category}
-              label="Category"
-              onChange={(e) => setCategory(e.target.value)}
-            >
-              {categories.map((cat) => (
-                <MenuItem key={cat} value={cat}>{cat}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <TextField
-            inputRef={dateRef}
-            label="Date"
-            type="date"
-            InputLabelProps={{ shrink: true }}
-          />
-
-          <TextField
-            inputRef={noteRef}
-            label="Note (optional)"
-            multiline
-            rows={2}
-          />
-
-          <Stack direction="row" spacing={2}>
-            <Button variant="contained" type="submit">{editId ? 'Update' : 'Add'}</Button>
-            {editId && (
-              <Button variant="outlined" onClick={() => setEditId(null)}>Cancel Edit</Button>
-            )}
-          </Stack>
-        </Box>
-      </Paper>
-
-      <Paper sx={{ p: 3, mb: 4 }}>
-        <Typography variant="h6" gutterBottom>Filter by Date</Typography>
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', maxWidth: 400 }}>
-          <TextField
-            label="Start Date"
-            type="date"
-            InputLabelProps={{ shrink: true }}
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-          />
-          <TextField
-            label="End Date"
-            type="date"
-            InputLabelProps={{ shrink: true }}
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-          />
-        </Box>
-      </Paper>
-
-      <Paper sx={{ p: 3, mb: 4 }}>
-        <Typography variant="h6" gutterBottom>Summary</Typography>
-        <Typography>Total Income: ₹{totalIncome}</Typography>
-        <Typography>Total Expense: ₹{totalExpense}</Typography>
-        <Typography>Balance: ₹{balance}</Typography>
-      </Paper>
+      <Grid container spacing={3} mb={4} justifyContent="center">
+        <Grid item xs={12} md={4}>
+          <Paper
+            sx={{
+              p: 3,
+              bgcolor: '#e8f5e9',
+              borderLeft: '8px solid #4caf50',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+            elevation={3}
+          >
+            <Box>
+              <Typography variant="h6" gutterBottom>Income</Typography>
+              <Typography variant="h5" fontWeight="bold">₹{totalIncome}</Typography>
+            </Box>
+            <AttachMoney sx={{ fontSize: 40, color: '#4caf50' }} />
+          </Paper>
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <Paper
+            sx={{
+              p: 3,
+              bgcolor: '#ffebee',
+              borderLeft: '8px solid #f44336',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+            elevation={3}
+          >
+            <Box>
+              <Typography variant="h6" gutterBottom>Expense</Typography>
+              <Typography variant="h5" fontWeight="bold">₹{totalExpense}</Typography>
+            </Box>
+            <MoneyOff sx={{ fontSize: 40, color: '#f44336' }} />
+          </Paper>
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <Paper
+            sx={{
+              p: 3,
+              bgcolor: '#ffffff',
+              borderLeft: '8px solid #1976d2',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+            elevation={3}
+          >
+            <Box>
+              <Typography variant="h6" gutterBottom>Balance</Typography>
+              <Typography variant="h5" fontWeight="bold">₹{balance}</Typography>
+            </Box>
+            <AccountBalanceWallet sx={{ fontSize: 40, color: '#1976d2' }} />
+          </Paper>
+        </Grid>
+      </Grid>
 
       <Grid container spacing={4} mb={4}>
         <Grid item xs={12} md={4} style={{ height: 400 }}>
@@ -358,6 +339,26 @@ export default function Dashboard() {
         </Grid>
       </Grid>
 
+      <Paper sx={{ p: 3, mb: 4 }}>
+        <Typography variant="h6" gutterBottom>Filter by Date</Typography>
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', maxWidth: 400 }}>
+          <TextField
+            label="Start Date"
+            type="date"
+            InputLabelProps={{ shrink: true }}
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+          <TextField
+            label="End Date"
+            type="date"
+            InputLabelProps={{ shrink: true }}
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+        </Box>
+      </Paper>
+
       <Paper sx={{ p: 3 }}>
         <Typography variant="h6" gutterBottom>Filtered Transactions</Typography>
         <Divider sx={{ mb: 2 }} />
@@ -374,6 +375,81 @@ export default function Dashboard() {
           </Box>
         ))}
       </Paper>
+
+      <Fab
+        color="primary"
+        aria-label="add"
+        onClick={() => setOpenForm(true)}
+        sx={{
+          position: 'fixed',
+          bottom: 32,
+          right: 32,
+        }}
+      >
+        <AddIcon />
+      </Fab>
+
+      <Dialog open={openForm} onClose={() => setOpenForm(false)}>
+        <DialogTitle>{editId ? 'Edit Transaction' : 'Add Transaction'}</DialogTitle>
+        <DialogContent>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1, width: 400 }}
+          >
+            <FormControl>
+              <FormLabel>Type</FormLabel>
+              <RadioGroup
+                row
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+              >
+                <FormControlLabel value="income" control={<Radio />} label="Income" />
+                <FormControlLabel value="expense" control={<Radio />} label="Expense" />
+              </RadioGroup>
+            </FormControl>
+
+            <TextField
+              inputRef={amountRef}
+              label="Amount"
+              type="number"
+              required
+            />
+
+            <FormControl fullWidth>
+              <InputLabel>Category</InputLabel>
+              <Select
+                value={category}
+                label="Category"
+                onChange={(e) => setCategory(e.target.value)}
+              >
+                {categories.map((cat) => (
+                  <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <TextField
+              inputRef={dateRef}
+              label="Date"
+              type="date"
+              InputLabelProps={{ shrink: true }}
+            />
+
+            <TextField
+              inputRef={noteRef}
+              label="Note (optional)"
+              multiline
+              rows={2}
+            />
+
+            <DialogActions>
+              <Button onClick={() => { setOpenForm(false); setEditId(null); }}>Cancel</Button>
+              <Button type="submit" variant="contained">{editId ? 'Update' : 'Add'}</Button>
+            </DialogActions>
+          </Box>
+        </DialogContent>
+      </Dialog>
     </Container>
   );
 }
