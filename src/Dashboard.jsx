@@ -23,8 +23,31 @@ import {
   BarChart,
   Bar,
   XAxis,
-  YAxis
+  YAxis,
+  LineChart,
+  Line,
+  CartesianGrid
 } from 'recharts';
+
+import {
+  Box,
+  Button,
+  Container,
+  FormControl,
+  FormControlLabel,
+  FormLabel,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Radio,
+  RadioGroup,
+  Select,
+  TextField,
+  Typography,
+  Paper,
+  Stack,
+  Divider
+} from '@mui/material';
 
 export default function Dashboard() {
   const { currentUser, logout } = useAuth();
@@ -147,6 +170,7 @@ export default function Dashboard() {
     return `${year}-${month}`;
   }
 
+  // Monthly Income & Expense for Bar Chart
   const monthGroups = {};
   expenses.forEach(exp => {
     const key = formatYearMonth(exp.date);
@@ -161,84 +185,122 @@ export default function Dashboard() {
   });
   const monthlyData = Object.values(monthGroups).sort((a, b) => a.month.localeCompare(b.month));
 
+  // Monthly Expense only for Line Chart (trend)
+  const expenseTrendGroups = {};
+  expenses
+    .filter(exp => exp.type === 'expense')
+    .forEach(exp => {
+      const key = formatYearMonth(exp.date);
+      if (!expenseTrendGroups[key]) {
+        expenseTrendGroups[key] = { month: key, expense: 0 };
+      }
+      expenseTrendGroups[key].expense += exp.amount;
+    });
+  const expenseTrendData = Object.values(expenseTrendGroups).sort((a, b) => a.month.localeCompare(b.month));
+
   return (
-    <div>
-      <h2>Welcome, {currentUser.email}</h2>
-      <button onClick={logout}>Logout</button>
+    <Container maxWidth="lg" sx={{ my: 4 }}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+        <Typography variant="h4">Welcome, {currentUser.email}</Typography>
+        <Button variant="outlined" color="error" onClick={logout}>Logout</Button>
+      </Box>
 
-      <h3>{editId ? 'Edit Transaction' : 'Add Transaction'}</h3>
-      <form onSubmit={handleSubmit}>
-        <label>
-          <input
-            type="radio"
-            value="income"
-            checked={type === 'income'}
-            onChange={(e) => setType(e.target.value)}
-          /> Income
-        </label>
-        <label>
-          <input
-            type="radio"
-            value="expense"
-            checked={type === 'expense'}
-            onChange={(e) => setType(e.target.value)}
-          /> Expense
-        </label>
-        <br />
+      <Paper sx={{ p: 3, mb: 4 }}>
+        <Typography variant="h5" gutterBottom>{editId ? 'Edit Transaction' : 'Add Transaction'}</Typography>
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 400 }}
+        >
+          <FormControl>
+            <FormLabel>Type</FormLabel>
+            <RadioGroup
+              row
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+            >
+              <FormControlLabel value="income" control={<Radio />} label="Income" />
+              <FormControlLabel value="expense" control={<Radio />} label="Expense" />
+            </RadioGroup>
+          </FormControl>
 
-        <input
-          ref={amountRef}
-          type="number"
-          placeholder="Amount"
-          required
-        />
-        <br />
+          <TextField
+            inputRef={amountRef}
+            label="Amount"
+            type="number"
+            required
+          />
 
-        <label>Category:</label><br />
-        <select value={category} onChange={(e) => setCategory(e.target.value)}>
-          {categories.map((cat) => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
-        </select>
-        <br />
+          <FormControl fullWidth>
+            <InputLabel>Category</InputLabel>
+            <Select
+              value={category}
+              label="Category"
+              onChange={(e) => setCategory(e.target.value)}
+            >
+              {categories.map((cat) => (
+                <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-        <label>Date:</label><br />
-        <input ref={dateRef} type="date" /><br />
+          <TextField
+            inputRef={dateRef}
+            label="Date"
+            type="date"
+            InputLabelProps={{ shrink: true }}
+          />
 
-        <textarea ref={noteRef} placeholder="Note (optional)" /><br />
+          <TextField
+            inputRef={noteRef}
+            label="Note (optional)"
+            multiline
+            rows={2}
+          />
 
-        <button type="submit">{editId ? 'Update' : 'Add'}</button>
-        {editId && <button type="button" onClick={() => setEditId(null)}>Cancel Edit</button>}
-      </form>
+          <Stack direction="row" spacing={2}>
+            <Button variant="contained" type="submit">{editId ? 'Update' : 'Add'}</Button>
+            {editId && (
+              <Button variant="outlined" onClick={() => setEditId(null)}>Cancel Edit</Button>
+            )}
+          </Stack>
+        </Box>
+      </Paper>
 
-      <h3>Filter by Date</h3>
-      <label>Start Date: </label>
-      <input
-        type="date"
-        value={startDate}
-        onChange={(e) => setStartDate(e.target.value)}
-      />
+      <Paper sx={{ p: 3, mb: 4 }}>
+        <Typography variant="h6" gutterBottom>Filter by Date</Typography>
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', maxWidth: 400 }}>
+          <TextField
+            label="Start Date"
+            type="date"
+            InputLabelProps={{ shrink: true }}
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+          <TextField
+            label="End Date"
+            type="date"
+            InputLabelProps={{ shrink: true }}
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+        </Box>
+      </Paper>
 
-      <label style={{ marginLeft: '1rem' }}>End Date: </label>
-      <input
-        type="date"
-        value={endDate}
-        onChange={(e) => setEndDate(e.target.value)}
-      />
+      <Paper sx={{ p: 3, mb: 4 }}>
+        <Typography variant="h6" gutterBottom>Summary</Typography>
+        <Typography>Total Income: ₹{totalIncome}</Typography>
+        <Typography>Total Expense: ₹{totalExpense}</Typography>
+        <Typography>Balance: ₹{balance}</Typography>
+      </Paper>
 
-      <h3>Summary</h3>
-      <p>Total Income: ₹{totalIncome}</p>
-      <p>Total Expense: ₹{totalExpense}</p>
-      <p>Balance: ₹{balance}</p>
-
-      <h3>Charts</h3>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
-        <div style={{ flex: 1, height: 400 }}>
-          <h4>Expense Breakdown (Pie Chart)</h4>
+      <Grid container spacing={4} mb={4}>
+        <Grid item xs={12} md={4} style={{ height: 400 }}>
+          <Typography variant="h6" gutterBottom>Expense Breakdown (Pie Chart)</Typography>
           {categoryTotals.length === 0 ? (
-            <p>No expense data for the selected range.</p>
+            <Typography>No expense data for the selected range.</Typography>
           ) : (
-            <ResponsiveContainer>
+            <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   dataKey="value"
@@ -258,14 +320,14 @@ export default function Dashboard() {
               </PieChart>
             </ResponsiveContainer>
           )}
-        </div>
+        </Grid>
 
-        <div style={{ flex: 1, height: 400 }}>
-          <h4>Income vs Expense (Monthly Bar Chart)</h4>
+        <Grid item xs={12} md={4} style={{ height: 400 }}>
+          <Typography variant="h6" gutterBottom>Income vs Expense (Monthly Bar Chart)</Typography>
           {monthlyData.length === 0 ? (
-            <p>No data for the selected range.</p>
+            <Typography>No data for the selected range.</Typography>
           ) : (
-            <ResponsiveContainer>
+            <ResponsiveContainer width="100%" height="100%">
               <BarChart data={monthlyData}>
                 <XAxis dataKey="month" />
                 <YAxis />
@@ -276,20 +338,42 @@ export default function Dashboard() {
               </BarChart>
             </ResponsiveContainer>
           )}
-        </div>
-      </div>
+        </Grid>
+        <Grid item xs={12} md={4} style={{ height: 400 }}>
+          <Typography variant="h6" gutterBottom>Expense Trend (Line Chart)</Typography>
+          {expenseTrendData.length === 0 ? (
+            <Typography>No expense data for the selected range.</Typography>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={expenseTrendData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="expense" stroke="#ff7300" name="Expense" />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
+        </Grid>
+      </Grid>
 
-      <h3>Filtered Transactions</h3>
-      <ul>
+      <Paper sx={{ p: 3 }}>
+        <Typography variant="h6" gutterBottom>Filtered Transactions</Typography>
+        <Divider sx={{ mb: 2 }} />
         {expenses.map((exp) => (
-          <li key={exp.id}>
-            [{exp.type}] {exp.category}: ₹{exp.amount} — {exp.note ? exp.note + ' — ' : ''}
-            {new Date(exp.date.seconds * 1000).toLocaleDateString()}
-            <button onClick={() => handleEdit(exp)}>Edit</button>
-            <button onClick={() => handleDelete(exp.id)}>Delete</button>
-          </li>
+          <Box key={exp.id} mb={1}>
+            <Typography>
+              [{exp.type}] {exp.category}: ₹{exp.amount} — {exp.note && `${exp.note} — `}
+              {new Date(exp.date.seconds * 1000).toLocaleDateString()}
+            </Typography>
+            <Stack direction="row" spacing={1} mt={1}>
+              <Button size="small" variant="outlined" onClick={() => handleEdit(exp)}>Edit</Button>
+              <Button size="small" variant="outlined" color="error" onClick={() => handleDelete(exp.id)}>Delete</Button>
+            </Stack>
+          </Box>
         ))}
-      </ul>
-    </div>
+      </Paper>
+    </Container>
   );
 }
