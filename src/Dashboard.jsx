@@ -196,17 +196,26 @@ export default function Dashboard() {
   });
   const monthlyData = Object.values(monthGroups).sort((a, b) => a.month.localeCompare(b.month));
 
-  const expenseTrendGroups = {};
+  function formatDateKey(date) {
+    const d = new Date(date.seconds ? date.seconds * 1000 : date);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  const dailyExpenseTrendGroups = {};
   expenses
     .filter(exp => exp.type === 'expense')
     .forEach(exp => {
-      const key = formatYearMonth(exp.date);
-      if (!expenseTrendGroups[key]) {
-        expenseTrendGroups[key] = { month: key, expense: 0 };
+      const key = formatDateKey(exp.date);
+      if (!dailyExpenseTrendGroups[key]) {
+        dailyExpenseTrendGroups[key] = { date: key, expense: 0 };
       }
-      expenseTrendGroups[key].expense += exp.amount;
+      dailyExpenseTrendGroups[key].expense += exp.amount;
     });
-  const expenseTrendData = Object.values(expenseTrendGroups).sort((a, b) => a.month.localeCompare(b.month));
+
+  const dailyExpenseTrendData = Object.values(dailyExpenseTrendGroups).sort((a, b) => a.date.localeCompare(b.date));
 
   return (
     <Container maxWidth="lg" sx={{ my: 4 }}>
@@ -321,14 +330,14 @@ export default function Dashboard() {
           )}
         </Grid>
         <Grid item xs={12} md={4} style={{ height: 400 }}>
-          <Typography variant="h6" gutterBottom>Expense Trend (Line Chart)</Typography>
-          {expenseTrendData.length === 0 ? (
+          <Typography variant="h6" gutterBottom>Daily Expense Trend (Line Chart)</Typography>
+          {dailyExpenseTrendData.length === 0 ? (
             <Typography>No expense data for the selected range.</Typography>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={expenseTrendData}>
+              <LineChart data={dailyExpenseTrendData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
+                <XAxis dataKey="date" />
                 <YAxis />
                 <Tooltip />
                 <Legend />
