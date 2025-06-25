@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { AttachMoney, MoneyOff, AccountBalanceWallet } from '@mui/icons-material';
+import { AttachMoney, MoneyOff, AccountBalanceWallet, MoreVert, Fastfood, LocalTaxi, CardGiftcard, VolunteerActivism, Movie, ShoppingCart, Receipt, LocalHospital, Category } from '@mui/icons-material';
 import { useAuth } from './AuthContext';
 import { db } from './backend/firebaseConfig';
 import {
@@ -52,7 +52,15 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Fab
+  Fab,
+  IconButton,
+  Avatar,
+  Menu,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  MenuItem as MUIMenuItem,
+  List
 } from '@mui/material';
 
 import AddIcon from '@mui/icons-material/Add';
@@ -73,6 +81,8 @@ export default function Dashboard() {
   const [endDate, setEndDate] = useState('');
 
   const [openForm, setOpenForm] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [menuExpId, setMenuExpId] = useState(null);
 
   const categories = [
     'Food',
@@ -91,6 +101,22 @@ export default function Dashboard() {
     '#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#8dd1e1',
     '#a4de6c', '#d0ed57', '#ffc0cb', '#ffbb28', '#00C49F'
   ];
+
+  const categoryIcons = {
+    Food: <Fastfood />, Transport: <LocalTaxi />, Salary: <AttachMoney />,
+    'Pocket Money': <CardGiftcard />, Lending: <VolunteerActivism />, Entertainment: <Movie />,
+    Shopping: <ShoppingCart />, Bills: <Receipt />, Healthcare: <LocalHospital />, Other: <Category />
+  };
+
+  const handleMenuOpen = (e, expId) => {
+    setAnchorEl(e.currentTarget);
+    setMenuExpId(expId);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setMenuExpId(null);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -371,20 +397,76 @@ export default function Dashboard() {
       <Paper sx={{ p: 3 }}>
         <Typography variant="h6" gutterBottom>Filtered Transactions</Typography>
         <Divider sx={{ mb: 2 }} />
-        {expenses.map((exp) => (
-          <Box key={exp.id} mb={1}>
-            <Typography>
-              [{exp.type}] {exp.category}: ₹{exp.amount} — {exp.note && `${exp.note} — `}
-              {new Date(exp.date.seconds * 1000).toLocaleDateString()}
-            </Typography>
-            <Stack direction="row" spacing={1} mt={1}>
-              <Button size="small" variant="outlined" onClick={() => handleEdit(exp)}>Edit</Button>
-              <Button size="small" variant="outlined" color="error" onClick={() => handleDelete(exp.id)}>Delete</Button>
-            </Stack>
-          </Box>
-        ))}
-      </Paper>
+        <List>
+          {expenses.map((exp) => {
+            const icon = categoryIcons[exp.category] || <Category />;
+            const date = new Date(exp.date.seconds * 1000);
+            const formattedDate = date.toLocaleDateString('en-GB');
+            const isIncome = exp.type === 'income';
+            return (
+              <ListItem
+                key={exp.id}
+                sx={{ px: 1, paddingRight: 15, py: 1.5, borderBottom: '1px solid #eee' }}
+                secondaryAction={
+                  <IconButton edge="end" onClick={(e) => handleMenuOpen(e, exp.id)}>
+                    <MoreVert />
+                  </IconButton>
+                }>
 
+                <ListItemAvatar><Avatar>{icon}</Avatar></ListItemAvatar>
+                <ListItemText
+                  primary={
+                    <Box display="flex" justifyContent="space-between" alignItems="flex-start">
+                      {/* Left: Category + Note */}
+                      <Box display="flex" flexDirection="column" flex="1" minWidth={0}>
+                        <Typography fontWeight="bold">{exp.category}</Typography>
+                        {exp.note && (
+                          <Typography variant="body2" color="textSecondary" sx={{ opacity: 0.7 }}>
+                            {exp.note}
+                          </Typography>
+                        )}
+                      </Box>
+                      <Box
+                        display="flex"
+                        justifyContent="flex-start"
+                        alignItems="center"
+                        sx={{ gap: 2, minWidth: 150 }}
+                      >
+                        <Typography
+                          variant="body2"
+                          color="textSecondary"
+                          sx={{ minWidth: '85px', textAlign: 'left' }}
+                        >
+                          {formattedDate}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          fontWeight="bold"
+                          color={isIncome ? 'green' : 'red'}
+                          sx={{ textAlign: 'left' }}
+                        >
+                          {isIncome ? '+' : '-'}₹{exp.amount}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  }
+                />
+              </ListItem>
+            );
+          })}
+        </List>
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+          <MUIMenuItem onClick={() => {
+            const exp = expenses.find(e => e.id === menuExpId);
+            handleEdit(exp);
+            handleMenuClose();
+          }}>Edit</MUIMenuItem>
+          <MUIMenuItem onClick={() => {
+            handleDelete(menuExpId);
+            handleMenuClose();
+          }}>Delete</MUIMenuItem>
+        </Menu>
+      </Paper>
       <Fab
         color="primary"
         aria-label="add"
