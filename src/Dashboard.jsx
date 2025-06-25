@@ -1,69 +1,26 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { AttachMoney, MoneyOff, AccountBalanceWallet, MoreVert, Fastfood, LocalTaxi, CardGiftcard, VolunteerActivism, Movie, ShoppingCart, Receipt, LocalHospital, Category } from '@mui/icons-material';
-import { useAuth } from './AuthContext';
-import { db } from './backend/firebaseConfig';
 import {
-  collection,
-  addDoc,
-  query,
-  orderBy,
-  onSnapshot,
-  doc,
-  deleteDoc,
-  updateDoc,
-  where
-} from 'firebase/firestore';
-
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  LineChart,
-  Line,
-  CartesianGrid
-} from 'recharts';
-
-import {
-  Box,
-  Button,
-  Container,
-  FormControl,
-  FormControlLabel,
-  FormLabel,
-  Grid,
-  InputLabel,
-  MenuItem,
-  Radio,
-  RadioGroup,
-  Select,
-  TextField,
-  Typography,
-  Paper,
-  Stack,
-  Divider,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Fab,
-  IconButton,
-  Avatar,
-  Menu,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  MenuItem as MUIMenuItem,
-  List
+  Box, Button, Container, Typography, Paper, TextField, Fab, Dialog, DialogTitle,
+  DialogContent, DialogActions, FormControl, FormControlLabel, FormLabel,
+  Radio, RadioGroup, InputLabel, Select, MenuItem
 } from '@mui/material';
 
 import AddIcon from '@mui/icons-material/Add';
+import { useAuth } from './AuthContext';
+import { db } from './backend/firebaseConfig';
+import {
+  collection, addDoc, query, orderBy, onSnapshot,
+  doc, deleteDoc, updateDoc, where
+} from 'firebase/firestore';
+
+import DashboardCards from './components/DashboardCards';
+import DashboardCharts from './components/DashboardCharts';
+import FilteredTransactions from './components/FilteredTransactions';
+
+import {
+  AttachMoney, MoneyOff, AccountBalanceWallet, Fastfood, LocalTaxi, CardGiftcard,
+  VolunteerActivism, Movie, ShoppingCart, Receipt, LocalHospital, Category
+} from '@mui/icons-material';
 
 export default function Dashboard() {
   const { currentUser, logout } = useAuth();
@@ -76,25 +33,16 @@ export default function Dashboard() {
   const [category, setCategory] = useState('Food');
   const [expenses, setExpenses] = useState([]);
   const [editId, setEditId] = useState(null);
-
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-
   const [openForm, setOpenForm] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuExpId, setMenuExpId] = useState(null);
 
   const categories = [
-    'Food',
-    'Transport',
-    'Salary',
-    'Pocket Money',
-    'Lending',
-    'Entertainment',
-    'Shopping',
-    'Bills',
-    'Healthcare',
-    'Other'
+    'Food', 'Transport', 'Salary', 'Pocket Money',
+    'Lending', 'Entertainment', 'Shopping',
+    'Bills', 'Healthcare', 'Other'
   ];
 
   const COLORS = [
@@ -148,13 +96,9 @@ export default function Dashboard() {
 
   useEffect(() => {
     const expenseRef = collection(db, 'users', currentUser.uid, 'expenses');
-
     let q = query(expenseRef, orderBy('date', 'desc'));
 
-    if (startDate) {
-      q = query(q, where('date', '>=', new Date(startDate)));
-    }
-
+    if (startDate) q = query(q, where('date', '>=', new Date(startDate)));
     if (endDate) {
       const nextDay = new Date(endDate);
       nextDay.setDate(nextDay.getDate() + 1);
@@ -178,70 +122,47 @@ export default function Dashboard() {
     setType(exp.type);
     setCategory(exp.category);
     const date = new Date(exp.date.seconds * 1000);
-    const yyyyMMdd = date.toISOString().split('T')[0];
-    dateRef.current.value = yyyyMMdd;
+    dateRef.current.value = date.toISOString().split('T')[0];
     setEditId(exp.id);
     setOpenForm(true);
   };
 
-  const totalIncome = expenses
-    .filter((exp) => exp.type === 'income')
-    .reduce((acc, exp) => acc + exp.amount, 0);
-
-  const totalExpense = expenses
-    .filter((exp) => exp.type === 'expense')
-    .reduce((acc, exp) => acc + exp.amount, 0);
-
+  const totalIncome = expenses.filter((e) => e.type === 'income').reduce((acc, e) => acc + e.amount, 0);
+  const totalExpense = expenses.filter((e) => e.type === 'expense').reduce((acc, e) => acc + e.amount, 0);
   const balance = totalIncome - totalExpense;
 
-  const categoryTotals = categories.map((cat) => {
-    const total = expenses
-      .filter((e) => e.category === cat && e.type === 'expense')
+  const categoryTotals = categories.map(cat => {
+    const total = expenses.filter(e => e.category === cat && e.type === 'expense')
       .reduce((acc, e) => acc + e.amount, 0);
     return { name: cat, value: total };
   }).filter(item => item.value > 0);
 
-  function formatYearMonth(date) {
-    const d = new Date(date.seconds ? date.seconds * 1000 : date);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    return `${year}-${month}`;
-  }
+  const formatYearMonth = (date) => {
+    const d = new Date(date.seconds * 1000);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  };
 
-  const monthGroups = {};
-  expenses.forEach(exp => {
-    const key = formatYearMonth(exp.date);
-    if (!monthGroups[key]) {
-      monthGroups[key] = { month: key, income: 0, expense: 0 };
-    }
-    if (exp.type === 'income') {
-      monthGroups[key].income += exp.amount;
-    } else if (exp.type === 'expense') {
-      monthGroups[key].expense += exp.amount;
-    }
+  const monthlyMap = {};
+  expenses.forEach((e) => {
+    const key = formatYearMonth(e.date);
+    if (!monthlyMap[key]) monthlyMap[key] = { month: key, income: 0, expense: 0 };
+    if (e.type === 'income') monthlyMap[key].income += e.amount;
+    else if (e.type === 'expense') monthlyMap[key].expense += e.amount;
   });
-  const monthlyData = Object.values(monthGroups).sort((a, b) => a.month.localeCompare(b.month));
+  const monthlyData = Object.values(monthlyMap).sort((a, b) => a.month.localeCompare(b.month));
 
-  function formatDateKey(date) {
-    const d = new Date(date.seconds ? date.seconds * 1000 : date);
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd}`;
-  }
+  const formatDateKey = (date) => {
+    const d = new Date(date.seconds * 1000);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
 
-  const dailyExpenseTrendGroups = {};
-  expenses
-    .filter(exp => exp.type === 'expense')
-    .forEach(exp => {
-      const key = formatDateKey(exp.date);
-      if (!dailyExpenseTrendGroups[key]) {
-        dailyExpenseTrendGroups[key] = { date: key, expense: 0 };
-      }
-      dailyExpenseTrendGroups[key].expense += exp.amount;
-    });
-
-  const dailyExpenseTrendData = Object.values(dailyExpenseTrendGroups).sort((a, b) => a.date.localeCompare(b.date));
+  const dailyMap = {};
+  expenses.filter(e => e.type === 'expense').forEach((e) => {
+    const key = formatDateKey(e.date);
+    if (!dailyMap[key]) dailyMap[key] = { date: key, expense: 0 };
+    dailyMap[key].expense += e.amount;
+  });
+  const dailyExpenseTrendData = Object.values(dailyMap).sort((a, b) => a.date.localeCompare(b.date));
 
   return (
     <Container maxWidth="lg" sx={{ my: 4 }}>
@@ -250,290 +171,58 @@ export default function Dashboard() {
         <Button variant="outlined" color="error" onClick={logout}>Logout</Button>
       </Box>
 
-      <Grid container spacing={3} mb={4} justifyContent="center">
-        <Grid item xs={12} md={4}>
-          <Paper
-            sx={{
-              p: 3,
-              bgcolor: '#e8f5e9',
-              borderLeft: '8px solid #4caf50',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-            elevation={3}
-          >
-            <Box>
-              <Typography variant="h6" gutterBottom>Income</Typography>
-              <Typography variant="h5" fontWeight="bold">₹{totalIncome}</Typography>
-            </Box>
-            <AttachMoney sx={{ fontSize: 40, color: '#4caf50' }} />
-          </Paper>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Paper
-            sx={{
-              p: 3,
-              bgcolor: '#ffebee',
-              borderLeft: '8px solid #f44336',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-            elevation={3}
-          >
-            <Box>
-              <Typography variant="h6" gutterBottom>Expense</Typography>
-              <Typography variant="h5" fontWeight="bold">₹{totalExpense}</Typography>
-            </Box>
-            <MoneyOff sx={{ fontSize: 40, color: '#f44336' }} />
-          </Paper>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Paper
-            sx={{
-              p: 3,
-              bgcolor: '#ffffff',
-              borderLeft: '8px solid #1976d2',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-            elevation={3}
-          >
-            <Box>
-              <Typography variant="h6" gutterBottom>Balance</Typography>
-              <Typography variant="h5" fontWeight="bold">₹{balance}</Typography>
-            </Box>
-            <AccountBalanceWallet sx={{ fontSize: 40, color: '#1976d2' }} />
-          </Paper>
-        </Grid>
-      </Grid>
+      <DashboardCards totalIncome={totalIncome} totalExpense={totalExpense} balance={balance} />
 
-      <Grid container spacing={4} mb={4}>
-        <Grid item xs={12} md={4} style={{ height: 400 }}>
-          <Typography variant="h6" gutterBottom>Expense Breakdown (Pie Chart)</Typography>
-          {categoryTotals.length === 0 ? (
-            <Typography>No expense data for the selected range.</Typography>
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  dataKey="value"
-                  data={categoryTotals}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={120}
-                  fill="#8884d8"
-                  label
-                >
-                  {categoryTotals.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          )}
-        </Grid>
-
-        <Grid item xs={12} md={4} style={{ height: 400 }}>
-          <Typography variant="h6" gutterBottom>Income vs Expense (Monthly Bar Chart)</Typography>
-          {monthlyData.length === 0 ? (
-            <Typography>No data for the selected range.</Typography>
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlyData}>
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="income" fill="#82ca9d" name="Income" />
-                <Bar dataKey="expense" fill="#8884d8" name="Expense" />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </Grid>
-        <Grid item xs={12} md={4} style={{ height: 400 }}>
-          <Typography variant="h6" gutterBottom>Daily Expense Trend (Line Chart)</Typography>
-          {dailyExpenseTrendData.length === 0 ? (
-            <Typography>No expense data for the selected range.</Typography>
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={dailyExpenseTrendData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="expense" stroke="#ff7300" name="Expense" />
-              </LineChart>
-            </ResponsiveContainer>
-          )}
-        </Grid>
-      </Grid>
+      <DashboardCharts
+        categoryTotals={categoryTotals}
+        monthlyData={monthlyData}
+        dailyExpenseTrendData={dailyExpenseTrendData}
+        COLORS={COLORS}
+      />
 
       <Paper sx={{ p: 3, mb: 4 }}>
         <Typography variant="h6" gutterBottom>Filter by Date</Typography>
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', maxWidth: 400 }}>
-          <TextField
-            label="Start Date"
-            type="date"
-            InputLabelProps={{ shrink: true }}
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-          />
-          <TextField
-            label="End Date"
-            type="date"
-            InputLabelProps={{ shrink: true }}
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-          />
+          <TextField label="Start Date" type="date" InputLabelProps={{ shrink: true }} value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+          <TextField label="End Date" type="date" InputLabelProps={{ shrink: true }} value={endDate} onChange={(e) => setEndDate(e.target.value)} />
         </Box>
       </Paper>
 
-      <Paper sx={{ p: 3 }}>
-        <Typography variant="h6" gutterBottom>Filtered Transactions</Typography>
-        <Divider sx={{ mb: 2 }} />
-        <List>
-          {expenses.map((exp) => {
-            const icon = categoryIcons[exp.category] || <Category />;
-            const date = new Date(exp.date.seconds * 1000);
-            const formattedDate = date.toLocaleDateString('en-GB');
-            const isIncome = exp.type === 'income';
-            return (
-              <ListItem
-                key={exp.id}
-                sx={{ px: 1, paddingRight: 15, py: 1.5, borderBottom: '1px solid #eee' }}
-                secondaryAction={
-                  <IconButton edge="end" onClick={(e) => handleMenuOpen(e, exp.id)}>
-                    <MoreVert />
-                  </IconButton>
-                }>
+      <FilteredTransactions
+        expenses={expenses}
+        handleEdit={handleEdit}
+        handleDelete={handleDelete}
+        handleMenuOpen={handleMenuOpen}
+        handleMenuClose={handleMenuClose}
+        anchorEl={anchorEl}
+        menuExpId={menuExpId}
+        categoryIcons={categoryIcons}
+      />
 
-                <ListItemAvatar><Avatar>{icon}</Avatar></ListItemAvatar>
-                <ListItemText
-                  primary={
-                    <Box display="flex" justifyContent="space-between" alignItems="flex-start">
-                      {/* Left: Category + Note */}
-                      <Box display="flex" flexDirection="column" flex="1" minWidth={0}>
-                        <Typography fontWeight="bold">{exp.category}</Typography>
-                        {exp.note && (
-                          <Typography variant="body2" color="textSecondary" sx={{ opacity: 0.7 }}>
-                            {exp.note}
-                          </Typography>
-                        )}
-                      </Box>
-                      <Box
-                        display="flex"
-                        justifyContent="flex-start"
-                        alignItems="center"
-                        sx={{ gap: 2, minWidth: 150 }}
-                      >
-                        <Typography
-                          variant="body2"
-                          color="textSecondary"
-                          sx={{ minWidth: '85px', textAlign: 'left' }}
-                        >
-                          {formattedDate}
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          fontWeight="bold"
-                          color={isIncome ? 'green' : 'red'}
-                          sx={{ textAlign: 'left' }}
-                        >
-                          {isIncome ? '+' : '-'}₹{exp.amount}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  }
-                />
-              </ListItem>
-            );
-          })}
-        </List>
-        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-          <MUIMenuItem onClick={() => {
-            const exp = expenses.find(e => e.id === menuExpId);
-            handleEdit(exp);
-            handleMenuClose();
-          }}>Edit</MUIMenuItem>
-          <MUIMenuItem onClick={() => {
-            handleDelete(menuExpId);
-            handleMenuClose();
-          }}>Delete</MUIMenuItem>
-        </Menu>
-      </Paper>
-      <Fab
-        color="primary"
-        aria-label="add"
-        onClick={() => setOpenForm(true)}
-        sx={{
-          position: 'fixed',
-          bottom: 32,
-          right: 32,
-        }}
-      >
+      <Fab color="primary" aria-label="add" onClick={() => setOpenForm(true)} sx={{ position: 'fixed', bottom: 32, right: 32 }}>
         <AddIcon />
       </Fab>
 
-      <Dialog open={openForm} onClose={() => setOpenForm(false)}>
+      <Dialog open={openForm} onClose={() => { setOpenForm(false); setEditId(null); }}>
         <DialogTitle>{editId ? 'Edit Transaction' : 'Add Transaction'}</DialogTitle>
         <DialogContent>
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1, width: 400 }}
-          >
+          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1, width: 400 }}>
             <FormControl>
               <FormLabel>Type</FormLabel>
-              <RadioGroup
-                row
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-              >
+              <RadioGroup row value={type} onChange={(e) => setType(e.target.value)}>
                 <FormControlLabel value="income" control={<Radio />} label="Income" />
                 <FormControlLabel value="expense" control={<Radio />} label="Expense" />
               </RadioGroup>
             </FormControl>
-
-            <TextField
-              inputRef={amountRef}
-              label="Amount"
-              type="number"
-              required
-            />
-
+            <TextField inputRef={amountRef} label="Amount" type="number" required />
             <FormControl fullWidth>
               <InputLabel>Category</InputLabel>
-              <Select
-                value={category}
-                label="Category"
-                onChange={(e) => setCategory(e.target.value)}
-              >
-                {categories.map((cat) => (
-                  <MenuItem key={cat} value={cat}>{cat}</MenuItem>
-                ))}
+              <Select value={category} label="Category" onChange={(e) => setCategory(e.target.value)}>
+                {categories.map((cat) => (<MenuItem key={cat} value={cat}>{cat}</MenuItem>))}
               </Select>
             </FormControl>
-
-            <TextField
-              inputRef={dateRef}
-              label="Date"
-              type="date"
-              InputLabelProps={{ shrink: true }}
-            />
-
-            <TextField
-              inputRef={noteRef}
-              label="Note (optional)"
-              multiline
-              rows={2}
-            />
-
+            <TextField inputRef={dateRef} label="Date" type="date" InputLabelProps={{ shrink: true }} />
+            <TextField inputRef={noteRef} label="Note (optional)" multiline rows={2} />
             <DialogActions>
               <Button onClick={() => { setOpenForm(false); setEditId(null); }}>Cancel</Button>
               <Button type="submit" variant="contained">{editId ? 'Update' : 'Add'}</Button>
