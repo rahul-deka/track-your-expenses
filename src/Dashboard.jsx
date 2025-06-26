@@ -2,10 +2,11 @@ import React, { useRef, useEffect, useState } from 'react';
 import {
   Box, Button, Container, Typography, Paper, TextField, Fab, Dialog, DialogTitle,
   DialogContent, DialogActions, FormControl, FormControlLabel, FormLabel,
-  Radio, RadioGroup, InputLabel, Select, MenuItem, Grid
+  Radio, RadioGroup, InputLabel, Select, MenuItem, Grid, IconButton, Menu
 } from '@mui/material';
 
 import AddIcon from '@mui/icons-material/Add';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import { useAuth } from './AuthContext';
 import { db } from './backend/firebaseConfig';
 import {
@@ -30,14 +31,19 @@ export default function Dashboard() {
   const dateRef = useRef();
 
   const [type, setType] = useState('expense');
-  const [category, setCategory] = useState('Food');
+  const [category, setCategory] = useState('');
   const [expenses, setExpenses] = useState([]);
   const [editId, setEditId] = useState(null);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [chartStartDate, setChartStartDate] = useState('');
+  const [chartEndDate, setChartEndDate] = useState('');
+  const [txStartDate, setTxStartDate] = useState('');
+  const [txEndDate, setTxEndDate] = useState('');
+  const [txFilterAnchor, setTxFilterAnchor] = useState(null);
+  const [filterType, setFilterType] = useState(null);
   const [openForm, setOpenForm] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuExpId, setMenuExpId] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('');
 
   const categories = [
     'Food', 'Transport', 'Salary', 'Pocket Money',
@@ -98,9 +104,9 @@ export default function Dashboard() {
     const expenseRef = collection(db, 'users', currentUser.uid, 'expenses');
     let q = query(expenseRef, orderBy('date', 'desc'));
 
-    if (startDate) q = query(q, where('date', '>=', new Date(startDate)));
-    if (endDate) {
-      const nextDay = new Date(endDate);
+    if (chartStartDate) q = query(q, where('date', '>=', new Date(chartStartDate)));
+    if (chartEndDate) {
+      const nextDay = new Date(chartEndDate);
       nextDay.setDate(nextDay.getDate() + 1);
       q = query(q, where('date', '<', nextDay));
     }
@@ -110,7 +116,7 @@ export default function Dashboard() {
     });
 
     return unsub;
-  }, [currentUser, startDate, endDate]);
+  }, [currentUser, chartStartDate, chartEndDate]);
 
   const handleDelete = async (id) => {
     await deleteDoc(doc(db, 'users', currentUser.uid, 'expenses', id));
@@ -126,6 +132,18 @@ export default function Dashboard() {
     setEditId(exp.id);
     setOpenForm(true);
   };
+
+  const filteredExpenses = expenses.filter((e) => {
+    const date = new Date(e.date.seconds * 1000);
+    if (filterType === 'date') {
+      const inStart = !txStartDate || date >= new Date(txStartDate);
+      const inEnd = !txEndDate || date <= new Date(txEndDate);
+      return inStart && inEnd;
+    } else if (filterType === 'category') {
+      return selectedCategory ? e.category === selectedCategory : true;
+    }
+    return true;
+  });
 
   const totalIncome = expenses.filter((e) => e.type === 'income').reduce((acc, e) => acc + e.amount, 0);
   const totalExpense = expenses.filter((e) => e.type === 'expense').reduce((acc, e) => acc + e.amount, 0);
@@ -171,44 +189,73 @@ export default function Dashboard() {
         <Button variant="outlined" color="error" onClick={logout}>Logout</Button>
       </Box>
 
-      <Box
-        sx={{
-          width: '90%',
-          mx: 'auto',
-          alignItems: 'center',
-          display: 'flex',
-          gap: 3,
-          mb: 4,
-        }}
-      >
-        <Box sx={{ flex: 1 }}>
-          <DashboardCards
-            totalIncome={totalIncome}
-            totalExpense={totalExpense}
-            balance={balance}
-          />
+      <Box sx={{ width: '90%', mx: 'auto', display: 'flex', gap: 3, mb: 4, alignItems: 'center' }}>
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <DashboardCards totalIncome={totalIncome} totalExpense={totalExpense} balance={balance} />
         </Box>
-
         <Box sx={{ flex: 1 }}>
-          <DashboardCharts
-            categoryTotals={categoryTotals}
-            monthlyData={monthlyData}
-            dailyExpenseTrendData={dailyExpenseTrendData}
-            COLORS={COLORS}
-          />
+          <DashboardCharts categoryTotals={categoryTotals} monthlyData={monthlyData} dailyExpenseTrendData={dailyExpenseTrendData} COLORS={COLORS} />
         </Box>
       </Box>
 
-      <Paper sx={{ p: 3, mb: 4 }}>
-        <Typography variant="h6" gutterBottom>Filter by Date</Typography>
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', maxWidth: 400 }}>
-          <TextField label="Start Date" type="date" InputLabelProps={{ shrink: true }} value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-          <TextField label="End Date" type="date" InputLabelProps={{ shrink: true }} value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+      <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+        <Typography variant="h6">Filtered Transactions</Typography>
+        <Box display="flex" alignItems="center" gap={1}>
+          {filterType === 'date' && (
+            <>
+              <TextField
+                type="date"
+                size="small"
+                value={txStartDate}
+                onChange={(e) => setTxStartDate(e.target.value)}
+              />
+              <TextField
+                type="date"
+                size="small"
+                value={txEndDate}
+                onChange={(e) => setTxEndDate(e.target.value)}
+              />
+            </>
+          )}
+
+          {filterType === 'category' && (
+            <FormControl size="small">
+              <InputLabel>Category</InputLabel>
+              <Select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                label="Category"
+              >
+                {categories.map(cat => (
+                  <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
+
+          <IconButton onClick={(e) => setTxFilterAnchor(e.currentTarget)}>
+            <FilterListIcon />
+          </IconButton>
+
+          <Menu
+            anchorEl={txFilterAnchor}
+            open={Boolean(txFilterAnchor)}
+            onClose={() => setTxFilterAnchor(null)}
+          >
+            <MenuItem onClick={() => {
+              setFilterType('date');
+              setTxFilterAnchor(null);
+            }}>Date</MenuItem>
+            <MenuItem onClick={() => {
+              setFilterType('category');
+              setTxFilterAnchor(null);
+            }}>Category</MenuItem>
+          </Menu>
         </Box>
-      </Paper>
+      </Box>
 
       <FilteredTransactions
-        expenses={expenses}
+        expenses={filteredExpenses}
         handleEdit={handleEdit}
         handleDelete={handleDelete}
         handleMenuOpen={handleMenuOpen}
@@ -235,9 +282,29 @@ export default function Dashboard() {
             </FormControl>
             <TextField inputRef={amountRef} label="Amount" type="number" required />
             <FormControl fullWidth>
-              <InputLabel>Category</InputLabel>
-              <Select value={category} label="Category" onChange={(e) => setCategory(e.target.value)}>
-                {categories.map((cat) => (<MenuItem key={cat} value={cat}>{cat}</MenuItem>))}
+              <InputLabel id="category-label">Category</InputLabel>
+              <Select
+                labelId="category-label"
+                id="category-select"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                displayEmpty
+                label="Category"
+                renderValue={(selected) => {
+                  if (!selected) {
+                    return <em>Select</em>;
+                  }
+                  return selected;
+                }}
+              >
+                <MenuItem value="">
+                  <em>Select</em>
+                </MenuItem>
+                {categories.map((cat) => (
+                  <MenuItem key={cat} value={cat}>
+                    {cat}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
             <TextField inputRef={dateRef} label="Date" type="date" InputLabelProps={{ shrink: true }} />

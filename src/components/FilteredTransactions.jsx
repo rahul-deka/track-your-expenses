@@ -18,8 +18,8 @@ import { MoreVert, Category } from '@mui/icons-material';
 export default function FilteredTransactions({ expenses, categoryIcons, handleMenuOpen, handleMenuClose, handleEdit, handleDelete, anchorEl, menuExpId }) {
   return (
     <Paper sx={{ p: 3 }}>
-      <Typography variant="h6" gutterBottom>Filtered Transactions</Typography>
-      <Divider sx={{ mb: 2 }} />
+      {/* <Typography variant="h6" gutterBottom>Filtered Transactions</Typography> */}
+      {/* <Divider sx={{ mb: 2 }} /> */}
       <List>
         {expenses.map((exp) => {
           const icon = categoryIcons[exp.category] || <Category />;
