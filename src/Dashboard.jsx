@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import {
   Box, Button, Container, Typography, Paper, TextField, Fab, Dialog, DialogTitle,
   DialogContent, DialogActions, FormControl, FormControlLabel, FormLabel,
-  Radio, RadioGroup, InputLabel, Select, MenuItem
+  Radio, RadioGroup, InputLabel, Select, MenuItem, Grid
 } from '@mui/material';
 
 import AddIcon from '@mui/icons-material/Add';
@@ -171,14 +171,33 @@ export default function Dashboard() {
         <Button variant="outlined" color="error" onClick={logout}>Logout</Button>
       </Box>
 
-      <DashboardCards totalIncome={totalIncome} totalExpense={totalExpense} balance={balance} />
+      <Box
+        sx={{
+          width: '90%',
+          mx: 'auto',
+          alignItems: 'center',
+          display: 'flex',
+          gap: 3,
+          mb: 4,
+        }}
+      >
+        <Box sx={{ flex: 1 }}>
+          <DashboardCards
+            totalIncome={totalIncome}
+            totalExpense={totalExpense}
+            balance={balance}
+          />
+        </Box>
 
-      <DashboardCharts
-        categoryTotals={categoryTotals}
-        monthlyData={monthlyData}
-        dailyExpenseTrendData={dailyExpenseTrendData}
-        COLORS={COLORS}
-      />
+        <Box sx={{ flex: 1 }}>
+          <DashboardCharts
+            categoryTotals={categoryTotals}
+            monthlyData={monthlyData}
+            dailyExpenseTrendData={dailyExpenseTrendData}
+            COLORS={COLORS}
+          />
+        </Box>
+      </Box>
 
       <Paper sx={{ p: 3, mb: 4 }}>
         <Typography variant="h6" gutterBottom>Filter by Date</Typography>
