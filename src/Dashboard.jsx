@@ -19,7 +19,7 @@ import DashboardCharts from './components/DashboardCharts';
 import FilteredTransactions from './components/FilteredTransactions';
 
 import {
-  AttachMoney, MoneyOff, AccountBalanceWallet, Fastfood, LocalTaxi, CardGiftcard,
+  CurrencyRupee, AttachMoney, MoneyOff, AccountBalanceWallet, Fastfood, LocalTaxi, CardGiftcard,
   VolunteerActivism, Movie, ShoppingCart, Receipt, LocalHospital, Category
 } from '@mui/icons-material';
 
@@ -57,7 +57,7 @@ export default function Dashboard() {
   ];
 
   const categoryIcons = {
-    Food: <Fastfood />, Transport: <LocalTaxi />, Salary: <AttachMoney />,
+    Food: <Fastfood />, Transport: <LocalTaxi />, Salary: <CurrencyRupee />,
     'Pocket Money': <CardGiftcard />, Lending: <VolunteerActivism />, Entertainment: <Movie />,
     Shopping: <ShoppingCart />, Bills: <Receipt />, Healthcare: <LocalHospital />, Other: <Category />
   };
@@ -199,7 +199,7 @@ export default function Dashboard() {
       </Box>
 
       <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
-        <Typography variant="h6">Filtered Transactions</Typography>
+        <Typography variant="h6">Recent Transactions</Typography>
         <Box display="flex" alignItems="center" gap={1}>
           {filterType === 'date' && (
             <>

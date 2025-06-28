@@ -15,6 +15,19 @@ import {
 } from '@mui/material';
 import { MoreVert, Category } from '@mui/icons-material';
 
+const categoryColors = {
+  Food: '#FF7043',
+  Transport: '#29B6F6',
+  Salary: '#66BB6A',
+  'Pocket Money': '#AB47BC',
+  Lending: '#FFCA28',
+  Entertainment: '#EF5350',
+  Shopping: '#8D6E63',
+  Bills: '#42A5F5',
+  Healthcare: '#D4E157',
+  Other: '#BDBDBD',
+};
+
 export default function FilteredTransactions({ expenses, categoryIcons, handleMenuOpen, handleMenuClose, handleEdit, handleDelete, anchorEl, menuExpId }) {
   return (
     <Paper sx={{ p: 3 }}>
@@ -37,7 +50,10 @@ export default function FilteredTransactions({ expenses, categoryIcons, handleMe
                 </IconButton>
               }
             >
-              <ListItemAvatar><Avatar>{icon}</Avatar></ListItemAvatar>
+              <ListItemAvatar><Avatar sx={{ bgcolor: categoryColors[exp.category] || '#ccc', color: '#fff' }}>
+                {icon}
+              </Avatar>
+              </ListItemAvatar>
               <ListItemText
                 primary={
                   <Box display="flex" justifyContent="space-between" alignItems="flex-start">

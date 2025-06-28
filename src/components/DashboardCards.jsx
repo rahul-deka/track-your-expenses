@@ -1,6 +1,6 @@
 import React from 'react';
 import { Paper, Typography, Box } from '@mui/material';
-import { AttachMoney, MoneyOff, AccountBalanceWallet } from '@mui/icons-material';
+import { TrendingUp, TrendingDown, AccountBalance } from '@mui/icons-material';
 
 export default function DashboardCards({ totalIncome, totalExpense, balance }) {
   return (
@@ -21,7 +21,7 @@ export default function DashboardCards({ totalIncome, totalExpense, balance }) {
           <Typography variant="h6" gutterBottom>Income</Typography>
           <Typography variant="h5" fontWeight="bold">₹{totalIncome}</Typography>
         </Box>
-        <AttachMoney sx={{ fontSize: 40, color: '#4caf50' }} />
+        <TrendingUp sx={{ fontSize: 40, color: '#4caf50' }} />
       </Paper>
 
       {/* Expense Card */}
@@ -40,7 +40,7 @@ export default function DashboardCards({ totalIncome, totalExpense, balance }) {
           <Typography variant="h6" gutterBottom>Expense</Typography>
           <Typography variant="h5" fontWeight="bold">₹{totalExpense}</Typography>
         </Box>
-        <MoneyOff sx={{ fontSize: 40, color: '#f44336' }} />
+        <TrendingDown sx={{ fontSize: 40, color: '#f44336' }} />
       </Paper>
 
       {/* Balance Card */}
@@ -59,7 +59,7 @@ export default function DashboardCards({ totalIncome, totalExpense, balance }) {
           <Typography variant="h6" gutterBottom>Balance</Typography>
           <Typography variant="h5" fontWeight="bold">₹{balance}</Typography>
         </Box>
-        <AccountBalanceWallet sx={{ fontSize: 40, color: '#1976d2' }} />
+        <AccountBalance sx={{ fontSize: 40, color: '#1976d2' }} />
       </Paper>
     </Box>
   );
