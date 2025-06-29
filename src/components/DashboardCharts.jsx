@@ -18,9 +18,8 @@ export default function DashboardCharts({ categoryTotals, monthlyData, dailyExpe
 
   return (
     <Box sx={{ mb: 4 }}>
-      {/* Dropdown Selector */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h6">Visual Insights</Typography>
+      <Box display="flex" justifyContent="center" alignItems="center" mb={2}>
+        {/* <Typography variant="h6">Visual Insights</Typography> */}
         <FormControl size="small">
           <InputLabel>Chart Type</InputLabel>
           <Select
