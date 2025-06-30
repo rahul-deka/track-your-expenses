@@ -12,7 +12,7 @@ import { useAuth } from './AuthContext';
 import { db } from './backend/firebaseConfig';
 import {
   collection, addDoc, query, orderBy, onSnapshot,
-  doc, deleteDoc, updateDoc, where
+  doc, deleteDoc, updateDoc, where, getDoc
 } from 'firebase/firestore';
 
 import DashboardCards from './components/DashboardCards';
@@ -32,6 +32,7 @@ export default function Dashboard() {
   const noteRef = useRef();
   const dateRef = useRef();
 
+  const [userName, setUserName] = useState('');
   const [type, setType] = useState('expense');
   const [category, setCategory] = useState('');
   const [expenses, setExpenses] = useState([]);
@@ -184,10 +185,24 @@ export default function Dashboard() {
   });
   const dailyExpenseTrendData = Object.values(dailyMap).sort((a, b) => a.date.localeCompare(b.date));
 
+  useEffect(() => {
+    const fetchUserName = async () => {
+      if (currentUser) {
+        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        if (userDoc.exists()) {
+          setUserName(userDoc.data().name);
+        }
+      }
+    };
+    fetchUserName();
+  }, [currentUser]);
+
   return (
     <Container maxWidth="lg" sx={{ my: 4 }}>
       <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems="center" mb={4} gap={2}>
-        <Typography variant="h5">Welcome, {currentUser.email}</Typography>
+        <Typography variant="h5">
+          Welcome, {userName || currentUser.email}
+        </Typography>
         <Button variant="outlined" color="error" onClick={logout}>Logout</Button>
       </Box>
 
