@@ -1,8 +1,6 @@
 import React from 'react';
 import {
   Paper,
-  Typography,
-  Divider,
   List,
   ListItem,
   ListItemAvatar,
@@ -12,6 +10,7 @@ import {
   IconButton,
   Menu,
   MenuItem as MUIMenuItem,
+  Typography,
 } from '@mui/material';
 import { MoreVert, Category } from '@mui/icons-material';
 
@@ -28,11 +27,18 @@ const categoryColors = {
   Other: '#BDBDBD',
 };
 
-export default function FilteredTransactions({ expenses, categoryIcons, handleMenuOpen, handleMenuClose, handleEdit, handleDelete, anchorEl, menuExpId }) {
+export default function FilteredTransactions({
+  expenses,
+  categoryIcons,
+  handleMenuOpen,
+  handleMenuClose,
+  handleEdit,
+  handleDelete,
+  anchorEl,
+  menuExpId
+}) {
   return (
     <Paper sx={{ p: 3 }}>
-      {/* <Typography variant="h6" gutterBottom>Filtered Transactions</Typography> */}
-      {/* <Divider sx={{ mb: 2 }} /> */}
       <List>
         {expenses.map((exp) => {
           const icon = categoryIcons[exp.category] || <Category />;
@@ -43,36 +49,63 @@ export default function FilteredTransactions({ expenses, categoryIcons, handleMe
           return (
             <ListItem
               key={exp.id}
-              sx={{ px: 1, paddingRight: 15, py: 1.5, borderBottom: '1px solid #eee' }}
+              sx={{
+                px: 1,
+                pr: { xs: 1, sm: 15 },
+                py: 1.5,
+                borderBottom: '1px solid #eee',
+                flexDirection: { xs: 'column', sm: 'row' },
+                alignItems: { xs: 'flex-start', sm: 'center' },
+                gap: { xs: 1, sm: 0 }
+              }}
               secondaryAction={
                 <IconButton edge="end" onClick={(e) => handleMenuOpen(e, exp.id)}>
                   <MoreVert />
                 </IconButton>
               }
             >
-              <ListItemAvatar><Avatar sx={{ bgcolor: categoryColors[exp.category] || '#ccc', color: '#fff' }}>
-                {icon}
-              </Avatar>
+              <ListItemAvatar>
+                <Avatar sx={{ bgcolor: categoryColors[exp.category] || '#ccc', color: '#fff' }}>
+                  {icon}
+                </Avatar>
               </ListItemAvatar>
+
               <ListItemText
                 primary={
-                  <Box display="flex" justifyContent="space-between" alignItems="flex-start">
-                    {/* Left: Category + Note */}
-                    <Box display="flex" flexDirection="column" flex="1" minWidth={0}>
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="flex-start"
+                    width="100%"
+                    flexDirection={{ xs: 'column', sm: 'row' }}
+                    gap={{ xs: 1, sm: 0 }}
+                  >
+                    {/* Left Side */}
+                    <Box
+                      display="flex"
+                      flexDirection="column"
+                      flex="1"
+                      minWidth={0}
+                    >
                       <Typography fontWeight="bold">{exp.category}</Typography>
                       {exp.note && (
-                        <Typography variant="body2" color="textSecondary" sx={{ opacity: 0.7 }}>
+                        <Typography
+                          variant="body2"
+                          color="textSecondary"
+                          sx={{ opacity: 0.7, wordBreak: 'break-word' }}
+                        >
                           {exp.note}
                         </Typography>
                       )}
                     </Box>
 
-                    {/* Right: Date + Amount */}
+                    {/* Right Side */}
                     <Box
                       display="flex"
                       alignItems="center"
-                      justifyContent="flex-start"
-                      sx={{ gap: 2, minWidth: 150 }}
+                      justifyContent={{ xs: 'space-between', sm: 'flex-start' }}
+                      sx={{ gap: 2, minWidth: { sm: 150 } }}
+                      width={{ xs: '100%', sm: 'auto' }}
                     >
                       <Typography
                         variant="body2"
@@ -85,7 +118,7 @@ export default function FilteredTransactions({ expenses, categoryIcons, handleMe
                         variant="body2"
                         fontWeight="bold"
                         color={isIncome ? 'green' : 'red'}
-                        sx={{ textAlign: 'left' }}
+                        sx={{ textAlign: 'left', whiteSpace: 'nowrap' }}
                       >
                         {isIncome ? '+' : '-'}₹{exp.amount}
                       </Typography>
@@ -97,16 +130,25 @@ export default function FilteredTransactions({ expenses, categoryIcons, handleMe
           );
         })}
       </List>
+
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-        <MUIMenuItem onClick={() => {
-          const exp = expenses.find(e => e.id === menuExpId);
-          handleEdit(exp);
-          handleMenuClose();
-        }}>Edit</MUIMenuItem>
-        <MUIMenuItem onClick={() => {
-          handleDelete(menuExpId);
-          handleMenuClose();
-        }}>Delete</MUIMenuItem>
+        <MUIMenuItem
+          onClick={() => {
+            const exp = expenses.find(e => e.id === menuExpId);
+            handleEdit(exp);
+            handleMenuClose();
+          }}
+        >
+          Edit
+        </MUIMenuItem>
+        <MUIMenuItem
+          onClick={() => {
+            handleDelete(menuExpId);
+            handleMenuClose();
+          }}
+        >
+          Delete
+        </MUIMenuItem>
       </Menu>
     </Paper>
   );
