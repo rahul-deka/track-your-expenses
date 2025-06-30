@@ -259,14 +259,19 @@ export default function Dashboard() {
               </RadioGroup>
             </FormControl>
             <TextField inputRef={amountRef} label="Amount" type="number" required />
-            <FormControl fullWidth>
+            <FormControl fullWidth required>
               <InputLabel id="category-label">Category</InputLabel>
-              <Select labelId="category-label" id="category-select" value={category} onChange={(e) => setCategory(e.target.value)} displayEmpty label="Category">
-                <MenuItem value="">
-                  <em>Select</em>
-                </MenuItem>
+              <Select
+                labelId="category-label"
+                id="category-select"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                label="Category"
+              >
                 {categories.map((cat) => (
-                  <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+                  <MenuItem key={cat} value={cat}>
+                    {cat}
+                  </MenuItem>
                 ))}
               </Select>
             </FormControl>
