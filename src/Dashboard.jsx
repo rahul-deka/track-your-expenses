@@ -2,7 +2,8 @@ import React, { useRef, useEffect, useState } from 'react';
 import {
   Box, Button, Container, Typography, Paper, TextField, Fab, Dialog, DialogTitle,
   DialogContent, DialogActions, FormControl, FormControlLabel, FormLabel,
-  Radio, RadioGroup, InputLabel, Select, MenuItem, Grid, IconButton, Menu
+  Radio, RadioGroup, InputLabel, Select, MenuItem, Grid, IconButton, Menu,
+  useMediaQuery
 } from '@mui/material';
 
 import AddIcon from '@mui/icons-material/Add';
@@ -25,6 +26,7 @@ import {
 
 export default function Dashboard() {
   const { currentUser, logout } = useAuth();
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   const amountRef = useRef();
   const noteRef = useRef();
@@ -184,13 +186,13 @@ export default function Dashboard() {
 
   return (
     <Container maxWidth="lg" sx={{ my: 4 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Typography variant="h4">Welcome, {currentUser.email}</Typography>
+      <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems="center" mb={4} gap={2}>
+        <Typography variant="h5">Welcome, {currentUser.email}</Typography>
         <Button variant="outlined" color="error" onClick={logout}>Logout</Button>
       </Box>
 
-      <Box sx={{ width: '90%', mx: 'auto', display: 'flex', gap: 3, mb: 4, alignItems: 'center' }}>
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Box sx={{ width: '100%', display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, mb: 4 }}>
+        <Box sx={{ flex: 1 }}>
           <DashboardCards totalIncome={totalIncome} totalExpense={totalExpense} balance={balance} />
         </Box>
         <Box sx={{ flex: 1 }}>
@@ -200,32 +202,18 @@ export default function Dashboard() {
 
       <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
         <Typography variant="h6">Recent Transactions</Typography>
-        <Box display="flex" alignItems="center" gap={1}>
+        <Box display="flex" flexWrap="wrap" alignItems="center" gap={1}>
           {filterType === 'date' && (
             <>
-              <TextField
-                type="date"
-                size="small"
-                value={txStartDate}
-                onChange={(e) => setTxStartDate(e.target.value)}
-              />
-              <TextField
-                type="date"
-                size="small"
-                value={txEndDate}
-                onChange={(e) => setTxEndDate(e.target.value)}
-              />
+              <TextField type="date" size="small" value={txStartDate} onChange={(e) => setTxStartDate(e.target.value)} />
+              <TextField type="date" size="small" value={txEndDate} onChange={(e) => setTxEndDate(e.target.value)} />
             </>
           )}
 
           {filterType === 'category' && (
             <FormControl size="small">
               <InputLabel>Category</InputLabel>
-              <Select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                label="Category"
-              >
+              <Select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} label="Category">
                 {categories.map(cat => (
                   <MenuItem key={cat} value={cat}>{cat}</MenuItem>
                 ))}
@@ -237,19 +225,9 @@ export default function Dashboard() {
             <FilterListIcon />
           </IconButton>
 
-          <Menu
-            anchorEl={txFilterAnchor}
-            open={Boolean(txFilterAnchor)}
-            onClose={() => setTxFilterAnchor(null)}
-          >
-            <MenuItem onClick={() => {
-              setFilterType('date');
-              setTxFilterAnchor(null);
-            }}>Date</MenuItem>
-            <MenuItem onClick={() => {
-              setFilterType('category');
-              setTxFilterAnchor(null);
-            }}>Category</MenuItem>
+          <Menu anchorEl={txFilterAnchor} open={Boolean(txFilterAnchor)} onClose={() => setTxFilterAnchor(null)}>
+            <MenuItem onClick={() => { setFilterType('date'); setTxFilterAnchor(null); }}>Date</MenuItem>
+            <MenuItem onClick={() => { setFilterType('category'); setTxFilterAnchor(null); }}>Category</MenuItem>
           </Menu>
         </Box>
       </Box>
@@ -272,7 +250,7 @@ export default function Dashboard() {
       <Dialog open={openForm} onClose={() => { setOpenForm(false); setEditId(null); }}>
         <DialogTitle>{editId ? 'Edit Transaction' : 'Add Transaction'}</DialogTitle>
         <DialogContent>
-          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1, width: 400 }}>
+          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1, width: { xs: '100%', sm: 400 } }}>
             <FormControl>
               <FormLabel>Type</FormLabel>
               <RadioGroup row value={type} onChange={(e) => setType(e.target.value)}>
@@ -283,27 +261,12 @@ export default function Dashboard() {
             <TextField inputRef={amountRef} label="Amount" type="number" required />
             <FormControl fullWidth>
               <InputLabel id="category-label">Category</InputLabel>
-              <Select
-                labelId="category-label"
-                id="category-select"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                displayEmpty
-                label="Category"
-                renderValue={(selected) => {
-                  if (!selected) {
-                    return <em>Select</em>;
-                  }
-                  return selected;
-                }}
-              >
+              <Select labelId="category-label" id="category-select" value={category} onChange={(e) => setCategory(e.target.value)} displayEmpty label="Category">
                 <MenuItem value="">
                   <em>Select</em>
                 </MenuItem>
                 {categories.map((cat) => (
-                  <MenuItem key={cat} value={cat}>
-                    {cat}
-                  </MenuItem>
+                  <MenuItem key={cat} value={cat}>{cat}</MenuItem>
                 ))}
               </Select>
             </FormControl>
