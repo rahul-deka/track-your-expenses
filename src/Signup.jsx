@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useAuth } from './AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from './backend/firebaseConfig';
 import {
@@ -9,7 +9,9 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  TextField
+  TextField,
+  Typography,
+  Box
 } from '@mui/material';
 
 export default function Signup() {
@@ -29,17 +31,13 @@ export default function Signup() {
     const userCredential = await signup(emailRef.current.value, passwordRef.current.value);
     const user = userCredential.user;
 
-    // Save user ID & email temporarily to use in dialog
     setUserId(user.uid);
     setUserEmail(user.email);
-
-    // Show name dialog
     setOpenNameDialog(true);
   };
 
   const handleNameSubmit = async () => {
     const name = nameRef.current.value.trim();
-
     if (!name) {
       alert('Name is required.');
       return;
@@ -55,13 +53,45 @@ export default function Signup() {
   };
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '400px', margin: 'auto' }}>
-      <h2>Sign Up</h2>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <TextField inputRef={emailRef} label="Email" type="email" required fullWidth />
-        <TextField inputRef={passwordRef} label="Password" type="password" required fullWidth />
-        <Button type="submit" variant="contained" color="primary">Sign Up</Button>
-      </form>
+    <Box
+      sx={{
+        minHeight: '90vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'auto',
+        padding: 2
+      }}
+    >
+      <Box
+        sx={{
+          padding: '2rem',
+          maxWidth: '400px',
+          width: '100%',
+          boxShadow: 3,
+          borderRadius: 2,
+          bgcolor: 'background.paper'
+        }}
+      >
+        <Typography variant="h5" align="center" gutterBottom>Sign Up</Typography>
+        <form
+          onSubmit={handleSubmit}
+          style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+        >
+          <TextField inputRef={emailRef} label="Email" type="email" required fullWidth />
+          <TextField inputRef={passwordRef} label="Password" type="password" required fullWidth />
+          <Button type="submit" variant="contained" color="primary">Sign Up</Button>
+        </form>
+
+        <Box mt={2} textAlign="center">
+          <Typography variant="body2">
+            Already have an account?{' '}
+            <Link to="/login" style={{ textDecoration: 'none', color: '#1976d2', fontWeight: 500 }}>
+              Login
+            </Link>
+          </Typography>
+        </Box>
+      </Box>
 
       {/* Name Dialog */}
       <Dialog open={openNameDialog} onClose={() => {}}>
@@ -81,6 +111,6 @@ export default function Signup() {
           <Button onClick={handleNameSubmit} variant="contained">Continue</Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </Box>
   );
 }
