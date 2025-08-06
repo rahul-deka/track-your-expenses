@@ -18,6 +18,8 @@ import {
 import DashboardCards from './components/DashboardCards';
 import DashboardCharts from './components/DashboardCharts';
 import FilteredTransactions from './components/FilteredTransactions';
+import { FileDownload } from '@mui/icons-material';
+import { exportTransactionsToCSV } from './utils/exportCSV';
 
 import {
   CurrencyRupee, AttachMoney, MoneyOff, AccountBalanceWallet, Fastfood, LocalTaxi, CardGiftcard,
@@ -218,6 +220,9 @@ export default function Dashboard() {
       <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
         <Typography variant="h6">Recent Transactions</Typography>
         <Box display="flex" flexWrap="wrap" alignItems="center" gap={1}>
+          <IconButton color="primary" onClick={() => exportTransactionsToCSV(filteredExpenses)} title="Export as CSV">
+            <FileDownload />
+          </IconButton>
           {filterType === 'date' && (
             <>
               <TextField type="date" size="small" value={txStartDate} onChange={(e) => setTxStartDate(e.target.value)} />
