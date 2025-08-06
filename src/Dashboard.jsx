@@ -18,6 +18,7 @@ import {
 import DashboardCards from './components/DashboardCards';
 import DashboardCharts from './components/DashboardCharts';
 import FilteredTransactions from './components/FilteredTransactions';
+import Footer from './components/Footer';
 import { FileDownload } from '@mui/icons-material';
 import { exportTransactionsToCSV } from './utils/exportCSV';
 
@@ -200,7 +201,8 @@ export default function Dashboard() {
   }, [currentUser]);
 
   return (
-    <Container maxWidth="lg" sx={{ my: 4 }}>
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Container maxWidth="lg" sx={{ my: 4, flex: 1 }}>
       <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems="center" mb={4} gap={2}>
         <Typography variant="h5">
           Welcome, {userName || currentUser.email}
@@ -304,6 +306,8 @@ export default function Dashboard() {
           </Box>
         </DialogContent>
       </Dialog>
-    </Container>
+      </Container>
+      <Footer />
+    </Box>
   );
 }

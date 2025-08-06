@@ -1,18 +1,43 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { TextField, Button, Typography, Box, Paper } from '@mui/material';
+import { TextField, Button, Typography, Box, Paper, Alert, Divider, IconButton } from '@mui/material';
+import { Google, ArrowBack } from '@mui/icons-material';
 
 export default function Login() {
   const emailRef = useRef();
   const passwordRef = useRef();
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await login(emailRef.current.value, passwordRef.current.value);
-    navigate('/');
+
+    try {
+      setError('');
+      setLoading(true);
+      await login(emailRef.current.value, passwordRef.current.value);
+      navigate('/');
+    } catch (error) {
+      setError('Failed to log in: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      setError('');
+      setLoading(true);
+      await loginWithGoogle();
+      navigate('/');
+    } catch (error) {
+      setError('Failed to log in with Google: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -36,9 +61,21 @@ export default function Login() {
           margin: 2
         }}
       >
-        <Typography variant="h4" component="h2" align="center" gutterBottom>
-          Login
-        </Typography>
+        <Box display="flex" alignItems="center" mb={2} position="relative">
+          <IconButton 
+            component={Link} 
+            to="/" 
+            sx={{ position: 'absolute', left: 0 }}
+            disabled={loading}
+          >
+            <ArrowBack />
+          </IconButton>
+          <Typography variant="h4" component="h2" sx={{ width: '100%', textAlign: 'center' }}>
+            Login
+          </Typography>
+        </Box>
+        
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
         
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
           <TextField 
@@ -48,6 +85,7 @@ export default function Login() {
             required 
             fullWidth 
             sx={{ mb: 2 }}
+            disabled={loading}
           />
           <TextField 
             inputRef={passwordRef} 
@@ -55,18 +93,40 @@ export default function Login() {
             type="password" 
             required 
             fullWidth 
-            sx={{ mb: 3 }}
+            sx={{ mb: 2 }}
+            disabled={loading}
           />
+          
+          <Box textAlign="center" sx={{ mb: 3 }}>
+            <Link to="/forgot-password" style={{ textDecoration: 'none', color: '#1976d2', fontSize: '0.875rem' }}>
+              Forgot Password?
+            </Link>
+          </Box>
+
           <Button 
             type="submit" 
             variant="contained" 
             color="primary" 
             fullWidth
             sx={{ mb: 2, py: 1.5 }}
+            disabled={loading}
           >
-            Login
+            {loading ? 'Logging in...' : 'Login'}
           </Button>
         </Box>
+
+        <Divider sx={{ my: 2 }}>OR</Divider>
+
+        <Button
+          onClick={handleGoogleLogin}
+          variant="outlined"
+          fullWidth
+          startIcon={<Google />}
+          sx={{ mb: 2, py: 1.5 }}
+          disabled={loading}
+        >
+          Continue with Google
+        </Button>
 
         <Box textAlign="center">
           <Typography variant="body2">

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './Home';
 import Signup from './Signup';
 import Login from './Login';
+import ForgotPassword from './ForgotPassword';
 import Dashboard from './Dashboard';
 import { useAuth } from './AuthContext';
 
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/dashboard" element={
           <PrivateRoute>
             <Dashboard />
