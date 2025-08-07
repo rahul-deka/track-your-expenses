@@ -3,6 +3,7 @@ import { useAuth } from './AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { TextField, Button, Typography, Box, Paper, Alert, Divider, IconButton } from '@mui/material';
 import { Google, ArrowBack } from '@mui/icons-material';
+import { validateEmail } from './utils/emailValidation';
 
 export default function Login() {
   const emailRef = useRef();
@@ -18,6 +19,14 @@ export default function Login() {
     try {
       setError('');
       setLoading(true);
+      
+      // Validate email using Abstract API
+      const emailValidation = await validateEmail(emailRef.current.value);
+      if (!emailValidation.isValid) {
+        setError(emailValidation.error);
+        return;
+      }
+      
       await login(emailRef.current.value, passwordRef.current.value);
       navigate('/');
     } catch (error) {

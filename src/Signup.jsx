@@ -3,6 +3,7 @@ import { useAuth } from './AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from './backend/firebaseConfig';
+import { validateEmail } from './utils/emailValidation';
 import {
   Dialog,
   DialogTitle,
@@ -39,6 +40,15 @@ export default function Signup() {
     try {
       setError('');
       setLoading(true);
+      
+      // Validate email using Abstract API
+      const emailValidation = await validateEmail(emailRef.current.value);
+      
+      if (!emailValidation.isValid) {
+        setError(emailValidation.error);
+        return;
+      }
+      
       const userCredential = await signup(emailRef.current.value, passwordRef.current.value);
       const user = userCredential.user;
 
@@ -46,7 +56,18 @@ export default function Signup() {
       setUserEmail(user.email);
       setOpenNameDialog(true);
     } catch (error) {
-      setError('Failed to create account: ' + error.message);
+      // Handle specific Firebase Auth errors with professional messages
+      if (error.code === 'auth/email-already-in-use') {
+        setError('An account with this email address already exists.');
+      } else if (error.code === 'auth/weak-password') {
+        setError('Password is too weak. Please choose a stronger password.');
+      } else if (error.code === 'auth/invalid-email') {
+        setError('Please enter a valid email address.');
+      } else if (error.code === 'auth/operation-not-allowed') {
+        setError('Email/password accounts are not enabled. Please contact support.');
+      } else {
+        setError('Failed to create account. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -63,7 +84,18 @@ export default function Signup() {
       setUserEmail(user.email);
       setOpenNameDialog(true);
     } catch (error) {
-      setError('Failed to sign up with Google: ' + error.message);
+      // Handle specific Google signup errors
+      if (error.code === 'auth/account-exists-with-different-credential') {
+        setError('An account already exists with this email using a different sign-in method.');
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        setError('Sign-up was cancelled. Please try again.');
+      } else if (error.code === 'auth/popup-blocked') {
+        setError('Popup was blocked. Please allow popups and try again.');
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        setError('Sign-up was cancelled. Please try again.');
+      } else {
+        setError('Failed to sign up with Google. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

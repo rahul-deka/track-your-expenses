@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { Link } from 'react-router-dom';
 import { TextField, Button, Alert, Typography, Box, Paper } from '@mui/material';
+import { validateEmailForReset } from './utils/emailValidation';
 
 export default function ForgotPassword() {
   const emailRef = useRef();
@@ -17,10 +18,28 @@ export default function ForgotPassword() {
       setMessage('');
       setError('');
       setLoading(true);
+      
+      // Validate email format
+      const emailValidation = await validateEmailForReset(emailRef.current.value);
+      if (!emailValidation.isValid) {
+        setError(emailValidation.error);
+        return;
+      }
+      
+      // Try to send password reset email
       await resetPassword(emailRef.current.value);
-      setMessage('Check your inbox for further instructions');
+      setMessage('If an account with this email exists, you will receive password reset instructions in your inbox.');
     } catch (error) {
-      setError('Failed to reset password: ' + error.message);
+      // Handle specific Firebase Auth errors
+      if (error.code === 'auth/user-not-found') {
+        setError('No account is associated with this email address');
+      } else if (error.code === 'auth/invalid-email') {
+        setError('Please enter a valid email address');
+      } else if (error.code === 'auth/too-many-requests') {
+        setError('Too many reset attempts. Please try again later.');
+      } else {
+        setError('Failed to send reset email. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
