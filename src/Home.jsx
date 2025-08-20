@@ -132,7 +132,7 @@ export default function Home() {
         <Container maxWidth="xl">
           <Box sx={{ textAlign: 'center' }}>
             <Chip 
-              label="🚀 Now with AI-powered automation"
+              label="⚠️ New Dashboard coming soon!"
               sx={{ 
                 mb: 4,
                 bgcolor: '#ecfdf5',
@@ -404,9 +404,11 @@ export default function Home() {
       <Box 
         component="footer" 
         sx={{ 
-          bgcolor: '#111827', 
+          // bgcolor: '#111827', 
+          bgcolor: '#059669',
           color: 'white', 
-          py: 16 
+          // pt: 8,
+          // pb: 6
         }}
       >
         <Container 
@@ -416,55 +418,61 @@ export default function Home() {
           }}
         >
           <Box sx={{ textAlign: 'center' }}>
-            <Box 
+            {/* <Box 
               sx={{ 
                 display: 'flex', 
+                flexDirection: { xs: 'column', md: 'row' },
                 alignItems: 'center', 
                 justifyContent: 'center', 
-                gap: 1, 
-                mb: 6 
+                gap: 12, 
+                mb: 8,
+                textAlign: { xs: 'center', md: 'left' }
               }}
             >
-              <Box
-                sx={{
-                  width: 32,
-                  height: 32,
-                  bgcolor: '#059669',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                <PiggyBankIcon sx={{ color: 'white', fontSize: 20 }} />
+              <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 1 }}>
+                <Box
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    bgcolor: '#059669',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <PiggyBankIcon sx={{ color: 'white', fontSize: 20 }} />
+                </Box>
+                <Typography 
+                  variant="h6"
+                  sx={{ 
+                    fontFamily: 'Georgia, serif', 
+                    fontWeight: 700, 
+                    fontSize: '1.25rem',
+                    ml: 1
+                  }}
+                >
+                  Hisap
+                </Typography>
               </Box>
               <Typography 
-                variant="h6"
                 sx={{ 
-                  fontFamily: 'Georgia, serif', 
-                  fontWeight: 700, 
-                  fontSize: '1.25rem' 
+                  fontFamily: 'Inter, sans-serif', 
+                  color: '#9ca3af', 
+                  lineHeight: 1.75, 
+                  maxWidth: '28rem', 
+                  ml: { md: 3 },
+                  mb: { xs: 2, md: 0 },
+                  mx: { xs: 'auto', md: 0 }
                 }}
               >
-                Hisap
+                Empowering people to make smarter financial decisions through intelligent expense tracking.
               </Typography>
-            </Box>
+            </Box> */}
             <Typography 
               sx={{ 
                 fontFamily: 'Inter, sans-serif', 
-                color: '#9ca3af', 
-                lineHeight: 1.75, 
-                mb: 8, 
-                maxWidth: '28rem', 
-                mx: 'auto' 
-              }}
-            >
-              Empowering people to make smarter financial decisions through intelligent expense tracking.
-            </Typography>
-            <Typography 
-              sx={{ 
-                fontFamily: 'Inter, sans-serif', 
-                color: '#9ca3af' 
+                color: 'white' 
               }}
             >
               © 2025 Hisap. All rights reserved.
