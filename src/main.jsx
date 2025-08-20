@@ -6,12 +6,15 @@ import { AuthProvider } from './AuthContext.jsx';
 import './index.css';
 import { ThemeProvider } from '@mui/material/styles';
 import { createTheme } from '@mui/material/styles';
+import { displayAsciiArt } from './components/asciiArt.jsx';
 
 const theme = createTheme({
   typography: {
     fontFamily: 'Inter, Roboto, "Helvetica Neue", Arial, sans-serif',
   },
 });
+
+displayAsciiArt();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
