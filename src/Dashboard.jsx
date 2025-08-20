@@ -36,7 +36,7 @@ export default function Dashboard() {
   const dateRef = useRef();
 
   const [userName, setUserName] = useState('');
-  const [type, setType] = useState('expense');
+  const [type, setType] = useState('');
   const [category, setCategory] = useState('');
   const [expenses, setExpenses] = useState([]);
   const [editId, setEditId] = useState(null);
@@ -51,11 +51,15 @@ export default function Dashboard() {
   const [menuExpId, setMenuExpId] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('');
 
-  const categories = [
+  const allCategories = [
     'Food', 'Transport', 'Salary', 'Pocket Money',
     'Lending', 'Entertainment', 'Shopping',
     'Bills', 'Healthcare', 'Other'
   ];
+
+  const incomeCategories = ['Salary', 'Pocket Money', 'Other'];
+
+  const categories = type === 'income' ? incomeCategories : allCategories;
 
   const COLORS = [
     '#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#8dd1e1',
@@ -270,18 +274,29 @@ export default function Dashboard() {
       </Fab>
 
       <Dialog open={openForm} onClose={() => { setOpenForm(false); setEditId(null); }}>
-        <DialogTitle>{editId ? 'Edit Transaction' : 'Add Transaction'}</DialogTitle>
+        <DialogTitle>
+          {editId
+            ? 'Edit Transaction'
+            : type === 'income'
+              ? 'Add Income'
+              : type === 'expense'
+                ? 'Add Expense'
+                : 'Add Transaction'}
+        </DialogTitle>
         <DialogContent>
           <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1, width: { xs: '100%', sm: 400 } }}>
-            <FormControl>
-              <FormLabel>Type</FormLabel>
-              <RadioGroup row value={type} onChange={(e) => setType(e.target.value)}>
+            <FormControl component="fieldset" required sx={{ mb: 2 }}>
+              <FormLabel component="legend">Type</FormLabel>
+              <RadioGroup row value={type} onChange={(e) => {
+                setType(e.target.value);
+                setCategory(''); // Reset category when type changes
+              }}>
                 <FormControlLabel value="income" control={<Radio />} label="Income" />
                 <FormControlLabel value="expense" control={<Radio />} label="Expense" />
               </RadioGroup>
             </FormControl>
             <TextField inputRef={amountRef} label="Amount" type="number" required />
-            <FormControl fullWidth required>
+            <FormControl fullWidth required disabled={!type}>
               <InputLabel id="category-label">Category</InputLabel>
               <Select
                 labelId="category-label"
@@ -301,7 +316,15 @@ export default function Dashboard() {
             <TextField inputRef={noteRef} label="Note (optional)" multiline rows={2} />
             <DialogActions>
               <Button onClick={() => { setOpenForm(false); setEditId(null); }}>Cancel</Button>
-              <Button type="submit" variant="contained">{editId ? 'Update' : 'Add'}</Button>
+              <Button type="submit" variant="contained" disabled={!type || !category}>
+                {editId
+                  ? 'Update'
+                  : type === 'income'
+                    ? 'Add Income'
+                    : type === 'expense'
+                      ? 'Add Expense'
+                      : 'Add'}
+              </Button>
             </DialogActions>
           </Box>
         </DialogContent>
