@@ -19,6 +19,7 @@ import {
   IconButton
 } from '@mui/material';
 import { Google, ArrowBack } from '@mui/icons-material';
+import { Savings as PiggyBankIcon } from '@mui/icons-material';
 
 export default function Signup() {
   const emailRef = useRef();
@@ -56,7 +57,6 @@ export default function Signup() {
       setUserEmail(user.email);
       setOpenNameDialog(true);
     } catch (error) {
-      // Handle specific Firebase Auth errors with professional messages
       if (error.code === 'auth/email-already-in-use') {
         setError('An account with this email address already exists.');
       } else if (error.code === 'auth/weak-password') {
@@ -84,7 +84,6 @@ export default function Signup() {
       setUserEmail(user.email);
       setOpenNameDialog(true);
     } catch (error) {
-      // Handle specific Google signup errors
       if (error.code === 'auth/account-exists-with-different-credential') {
         setError('An account already exists with this email using a different sign-in method.');
       } else if (error.code === 'auth/cancelled-popup-request') {
@@ -120,40 +119,47 @@ export default function Signup() {
   return (
     <Box
       sx={{
-        height: '100vh',
+        minHeight: '100vh',
+        bgcolor: '#f5f5f5',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#f5f5f5',
-        overflow: 'hidden'
+        py: 6,
       }}
     >
       <Paper
         elevation={8}
         sx={{
-          padding: 4,
+          p: { xs: 3, sm: 5 },
           maxWidth: 400,
           width: '100%',
-          borderRadius: 2,
-          margin: 2
+          borderRadius: 3,
+          boxShadow: '0 8px 32px rgba(16, 185, 129, 0.10)',
+          mx: 2,
         }}
       >
-        <Box display="flex" alignItems="center" mb={2} position="relative">
-          <IconButton 
-            component={Link} 
-            to="/" 
-            sx={{ position: 'absolute', left: 0 }}
-            disabled={loading}
-          >
-            <ArrowBack />
-          </IconButton>
-          <Typography variant="h4" component="h2" sx={{ width: '100%', textAlign: 'center' }}>
-            Sign Up
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+            <Box sx={{ width: 32, height: 32, bgcolor: '#059669', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <PiggyBankIcon sx={{ color: 'white', fontSize: 20 }} />
+            </Box>
+            <Typography variant="h6" sx={{ fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: '1.25rem', color: '#111827', ml: 1 }}>
+              Hisap
+            </Typography>
+          </Box>
+          <Typography sx={{ color: '#6b7280', fontFamily: 'Inter, sans-serif', fontSize: '1rem', textAlign: 'center' }}>
+            Create your account to get started
           </Typography>
         </Box>
-        
+        <IconButton 
+          component={Link} 
+          to="/" 
+          sx={{ position: 'absolute', left: 16, top: 16, bgcolor: '#f3f4f6', color: '#059669', '&:hover': { bgcolor: '#e5e7eb' } }}
+          disabled={loading}
+        >
+          <ArrowBack />
+        </IconButton>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-        
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
           <TextField 
             inputRef={emailRef} 
@@ -161,7 +167,19 @@ export default function Signup() {
             type="email" 
             required 
             fullWidth 
-            sx={{ mb: 2 }}
+            sx={{ 
+              mb: 2, 
+              borderRadius: 2, 
+              '& .MuiOutlinedInput-root': { 
+                borderRadius: 2, 
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#059669',
+                },
+              },
+              '& label.Mui-focused': {
+                color: '#059669',
+              },
+            }}
             disabled={loading}
           />
           <TextField 
@@ -170,44 +188,51 @@ export default function Signup() {
             type="password" 
             required 
             fullWidth 
-            sx={{ mb: 3 }}
+            sx={{ 
+              mb: 3, 
+              borderRadius: 2, 
+              '& .MuiOutlinedInput-root': { 
+                borderRadius: 2, 
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#059669',
+                },
+              },
+              '& label.Mui-focused': {
+                color: '#059669',
+              },
+            }}
             disabled={loading}
           />
           <Button 
             type="submit" 
             variant="contained" 
-            color="primary" 
             fullWidth
-            sx={{ mb: 2, py: 1.5 }}
+            sx={{ mb: 2, py: 1.5, bgcolor: '#059669', color: 'white', fontWeight: 600, borderRadius: 2, fontSize: '1.1rem', textTransform: 'none', boxShadow: 'none', '&:hover': { bgcolor: '#047857', boxShadow: 'none' } }}
             disabled={loading}
           >
             {loading ? 'Creating Account...' : 'Sign Up'}
           </Button>
         </Box>
-
-        <Divider sx={{ my: 2 }}>OR</Divider>
-
+        <Divider sx={{ my: 2, color: '#d1d5db' }}>OR</Divider>
         <Button
           onClick={handleGoogleSignup}
           variant="outlined"
           fullWidth
           startIcon={<Google />}
-          sx={{ mb: 2, py: 1.5 }}
+          sx={{ mb: 2, py: 1.5, borderRadius: 2, color: '#059669', borderColor: '#a7f3d0', fontWeight: 600, background: '#ecfdf5', '&:hover': { bgcolor: '#d1fae5', borderColor: '#059669' } }}
           disabled={loading}
         >
           Continue with Google
         </Button>
-
-        <Box textAlign="center">
-          <Typography variant="body2">
+        <Box textAlign="center" sx={{ mt: 2 }}>
+          <Typography variant="body2" sx={{ color: '#6b7280', fontFamily: 'Inter, sans-serif' }}>
             Already have an account?{' '}
-            <Link to="/login" style={{ textDecoration: 'none', color: '#1976d2', fontWeight: 500 }}>
+            <Link to="/login" style={{ textDecoration: 'none', color: '#059669', fontWeight: 600 }}>
               Login
             </Link>
           </Typography>
         </Box>
       </Paper>
-
       <Dialog open={openNameDialog} onClose={() => {}}>
         <DialogTitle>Welcome! Tell us your name</DialogTitle>
         <DialogContent>
@@ -222,7 +247,7 @@ export default function Signup() {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleNameSubmit} variant="contained">Continue</Button>
+          <Button onClick={handleNameSubmit} variant="contained" sx={{ bgcolor: '#059669', color: 'white', fontWeight: 600, textTransform: 'none', '&:hover': { bgcolor: '#047857' } }}>Continue</Button>
         </DialogActions>
       </Dialog>
     </Box>
