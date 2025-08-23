@@ -328,7 +328,7 @@ export default function Home() {
       </div>
 
       {/* Final CTA Section */}
-      <Box sx={{ py: 12, bgcolor: '#059669' }}>
+      <Box sx={{ py: 12, bgcolor: '#059669', paddingBottom: 6 }}>
         <Container maxWidth="md">
           <Box sx={{ textAlign: 'center' }}>
             <Typography 
@@ -469,14 +469,44 @@ export default function Home() {
                 Empowering people to make smarter financial decisions through intelligent expense tracking.
               </Typography>
             </Box> */}
-            <Typography 
+            <Box 
               sx={{ 
-                fontFamily: 'Inter, sans-serif', 
-                color: 'white' 
+                display: 'flex', 
+                flexDirection: { xs: 'column', sm: 'row' }, 
+                justifyContent: 'center', 
+                alignItems: { xs: 'center', sm: 'center' }, 
+                gap: { xs: 1, sm: 6, md: 12 }, 
+                width: '100%',
+                textAlign: { xs: 'center', sm: 'center' },
+                borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+                py: 2,
+                flexWrap: 'wrap',
+                wordBreak: 'break-word'
               }}
             >
-              © 2025 Hisap. All rights reserved.
-            </Typography>
+              <Typography 
+                sx={{ 
+                  fontFamily: 'Inter, sans-serif', 
+                  color: 'white',
+                  fontSize: { xs: '0.95rem', sm: '1rem' },
+                  width: { xs: '100%', sm: 'auto' },
+                  mb: { xs: 0.5, sm: 0 }
+                }}
+              >
+                © 2025 Hisap. All rights reserved.
+              </Typography>
+              <Typography 
+                sx={{ 
+                  fontFamily: 'Inter, sans-serif', 
+                  color: 'white',
+                  fontSize: { xs: '0.95rem', sm: '1rem' },
+                  ml: { sm: 3 },
+                  mt: { xs: 0, sm: 0 }
+                }}
+              >
+                Developed by <a href="https://rahul-deka.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline', fontWeight: 500 }}>Rahul Deka</a>.
+              </Typography>
+            </Box>
           </Box>
         </Container>
       </Box>
