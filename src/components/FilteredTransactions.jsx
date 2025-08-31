@@ -134,8 +134,7 @@ export default function FilteredTransactions({
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
         <MUIMenuItem
           onClick={() => {
-            const exp = expenses.find(e => e.id === menuExpId);
-            handleEdit(exp);
+            handleEdit(menuExpId);
             handleMenuClose();
           }}
         >

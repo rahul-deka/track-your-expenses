@@ -1,4 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
 import {
   Box, Button, Container, Typography, Paper, TextField, Fab, Dialog, DialogTitle,
   DialogContent, DialogActions, FormControl, FormControlLabel, FormLabel,
@@ -38,6 +40,8 @@ export default function Dashboard() {
   const [userName, setUserName] = useState('');
   const [type, setType] = useState('');
   const [category, setCategory] = useState('');
+  const [showEditSuccess, setShowEditSuccess] = useState(false);
+  const [showAddSuccess, setShowAddSuccess] = useState(false);
   const [expenses, setExpenses] = useState([]);
   const [editId, setEditId] = useState(null);
   const [chartStartDate, setChartStartDate] = useState('');
@@ -98,8 +102,10 @@ export default function Dashboard() {
       const docRef = doc(db, 'users', currentUser.uid, 'expenses', editId);
       await updateDoc(docRef, data);
       setEditId(null);
+      setShowEditSuccess(true);
     } else {
       await addDoc(expenseRef, data);
+      setShowAddSuccess(true);
     }
 
     amountRef.current.value = '';
@@ -132,16 +138,36 @@ export default function Dashboard() {
     await deleteDoc(doc(db, 'users', currentUser.uid, 'expenses', id));
   };
 
-  const handleEdit = (exp) => {
-    amountRef.current.value = exp.amount;
-    noteRef.current.value = exp.note;
-    setType(exp.type);
-    setCategory(exp.category);
-    const date = new Date(exp.date.seconds * 1000);
-    dateRef.current.value = date.toISOString().split('T')[0];
-    setEditId(exp.id);
+  const handleEdit = (expId) => {
+    setEditId(expId);
     setOpenForm(true);
   };
+  // Populate form fields when editing
+  useEffect(() => {
+    if (openForm && editId) {
+      const exp = expenses.find(e => e.id === editId);
+      if (!exp) return;
+      setType(exp.type);
+      setCategory(exp.category);
+      // Wait for type/category state to update, then set refs
+      setTimeout(() => {
+        if (amountRef.current) amountRef.current.value = exp.amount;
+        if (noteRef.current) noteRef.current.value = exp.note;
+        if (dateRef.current) {
+          const date = new Date(exp.date.seconds * 1000);
+          dateRef.current.value = date.toISOString().split('T')[0];
+        }
+      }, 0);
+    }
+    // If not editing, clear fields
+    if (openForm && !editId) {
+      if (amountRef.current) amountRef.current.value = '';
+      if (noteRef.current) noteRef.current.value = '';
+      setType('expense');
+      setCategory('Food');
+      if (dateRef.current) dateRef.current.value = '';
+    }
+  }, [openForm, editId, expenses]);
 
   const filteredExpenses = expenses.filter((e) => {
     const date = new Date(e.date.seconds * 1000);
@@ -331,6 +357,16 @@ export default function Dashboard() {
       </Dialog>
       </Container>
       <Footer />
+      <Snackbar open={showEditSuccess} autoHideDuration={2500} onClose={() => setShowEditSuccess(false)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        <MuiAlert onClose={() => setShowEditSuccess(false)} severity="success" sx={{ width: '100%' }} elevation={6} variant="filled">
+          Transaction successfully edited!
+        </MuiAlert>
+      </Snackbar>
+      <Snackbar open={showAddSuccess} autoHideDuration={2500} onClose={() => setShowAddSuccess(false)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        <MuiAlert onClose={() => setShowAddSuccess(false)} severity="success" sx={{ width: '100%' }} elevation={6} variant="filled">
+          Transaction successfully added!
+        </MuiAlert>
+      </Snackbar>
     </Box>
   );
 }
