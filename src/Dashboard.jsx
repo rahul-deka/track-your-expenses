@@ -42,6 +42,7 @@ export default function Dashboard() {
   const [category, setCategory] = useState('');
   const [showEditSuccess, setShowEditSuccess] = useState(false);
   const [showAddSuccess, setShowAddSuccess] = useState(false);
+  const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
   const [expenses, setExpenses] = useState([]);
   const [editId, setEditId] = useState(null);
   const [chartStartDate, setChartStartDate] = useState('');
@@ -136,6 +137,7 @@ export default function Dashboard() {
 
   const handleDelete = async (id) => {
     await deleteDoc(doc(db, 'users', currentUser.uid, 'expenses', id));
+    setShowDeleteSuccess(true);
   };
 
   const handleEdit = (expId) => {
@@ -365,6 +367,11 @@ export default function Dashboard() {
       <Snackbar open={showAddSuccess} autoHideDuration={2500} onClose={() => setShowAddSuccess(false)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
         <MuiAlert onClose={() => setShowAddSuccess(false)} severity="success" sx={{ width: '100%' }} elevation={6} variant="filled">
           Transaction successfully added!
+        </MuiAlert>
+      </Snackbar>
+      <Snackbar open={showDeleteSuccess} autoHideDuration={2500} onClose={() => setShowDeleteSuccess(false)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        <MuiAlert onClose={() => setShowDeleteSuccess(false)} severity="success" sx={{ width: '100%' }} elevation={6} variant="filled">
+          Transaction successfully deleted!
         </MuiAlert>
       </Snackbar>
     </Box>
