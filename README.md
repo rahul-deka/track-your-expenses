@@ -39,7 +39,7 @@ Track your income, monitor expenses, analyze trends, and stay in control of your
 ## Installation
 
 ```bash
-git clone https://github.com/iamRahul21/track-your-expenses.git
+git clone https://github.com/rahul-deka/track-your-expenses.git
 cd track-your-expenses
 npm install
 ```
